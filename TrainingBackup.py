@@ -21,10 +21,9 @@ docx_path = r"E:\Accountability\Training\2024\ThePRogram2024.docx"
 pdf_path = r"E:\Accountability\Training\2024\ThePRogram2024.pdf"  
 convert(docx_path, pdf_path)
 
-def clean_local_folder(filename, path):
-    file_path = os.path.join(path, filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
+def clean_local_folder(file):
+    if os.path.exists(file):
+        os.remove(file)
         print(f"File deleted successfully from local folder!")
         print("---------------------------------------------------------------------------")
     else:
@@ -164,6 +163,6 @@ except Exception as e:
     print("Error:", str(e))
     print("---------------------------------------------------------------------------")
 
-clean_local_folder(r"ThePRogram2024.pdf", r"E:\Accountability\Training\2024")
+clean_local_folder(pdf_path)
 
-time.sleep(10)
+time.sleep(5)
