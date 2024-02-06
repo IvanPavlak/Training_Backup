@@ -25,11 +25,11 @@ def clean_local_folder(filename, path):
     if os.path.exists(file_path):
         os.remove(file_path)
         print("---------------------------------------------------------------------------")
-        print(f"'{filename}' deleted successfully from local folder.")
+        print(f"File deleted successfully from local folder!")
         print("---------------------------------------------------------------------------")
     else:
         print("---------------------------------------------------------------------------")
-        print(f"'{filename}' does not exist in the specified path.")
+        print(f"File does not exist in the specified path!")
         print("---------------------------------------------------------------------------")
 
 # OneDrive Upload
@@ -52,34 +52,36 @@ print(URL + "?client_id=" + client_id + "&scope=" + scope + "&response_type=" + 
      "&redirect_uri=" + urllib.parse.quote(redirect_uri))
 print("---------------------------------------------------------------------------")
 print("Sign in to your account, copy the whole redirected URL!")
-code = input("Paste the URL here:\n")
+code = input("Paste the URL here:\n\n")
 print("---------------------------------------------------------------------------")
-token = code[(code.find('access_token') + len('access_token') + 1) : (code.find('&token_type'))]
+token = code[(code.find("access_token") + len("access_token") + 1) : (code.find("&token_type"))]
 
 # Authorization header for API requests
-URL = 'https://graph.microsoft.com/v1.0/'
-HEADERS = {'Authorization': 'Bearer ' + token}
+URL = "https://graph.microsoft.com/v1.0/"
+HEADERS = {"Authorization": "Bearer " + token}
 
 # Check response for authentication success
-response = requests.get(URL + 'me/drive/', headers = HEADERS)
+response = requests.get(URL + "me/drive/", headers = HEADERS)
 if (response.status_code == 200):
     response = json.loads(response.text)
-    print('Connected to the OneDrive of', response['owner']['user']['displayName']+' (',response['driveType']+' ).', \
-         '\nConnection valid for one hour. Reauthenticate if required.')
+    print("Connected to OneDrive of", response["owner"]["user"]["displayName"]+ " (",response["driveType"]+" ).", \
+         "\nConnection valid for one hour. \nReauthenticate if required.")
 elif (response.status_code == 401):
     response = json.loads(response.text)
-    print('API Error! : ', response['error']['code'],\
-         '\nSee response for more details.')
+    print("API Error! : ", response["error"]["code"],\
+         "\nSee response for more details.")
 else:
     response = json.loads(response.text)
-    print('Unknown error! See response for more details.')
+    print("Unknown error! See response for more details.")
 
 # Upload file to OneDrive
-url = 'me/drive/root:/ThePRogram2024.pdf:/content'
+url = "me/drive/root:/ThePRogram2024.pdf:/content"
 url = URL + url
-content = open(pdf_path, 'rb')
+content = open(pdf_path, "rb")
 response = json.loads(requests.put(url, headers=HEADERS, data = content).text)
 content.close()
+print("---------------------------------------------------------------------------")
+print("Uploaded file to OneDrive!")
 
 # Google Drive Upload
 # Authorization and Authentication
@@ -133,7 +135,7 @@ try:
         file_id = response["files"][0]["id"]
         service.files().delete(fileId=file_id).execute()
         print("---------------------------------------------------------------------------")
-        print("Deleted existing file from Drive: ThePRogram2024.pdf")
+        print("Deleted existing file from Google Drive!")
 
     # Upload the new version of ThePRogram2024.pdf
     file_name = "ThePRogram2024.pdf"
@@ -149,7 +151,7 @@ try:
     
     media.stream().close()
     print("---------------------------------------------------------------------------")
-    print("Uploaded file: " + file_name)
+    print("Uploaded file to Google Drive!")
 
 except HttpError as e:
     print("Error: " + str(e))
