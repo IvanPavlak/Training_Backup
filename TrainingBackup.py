@@ -24,90 +24,77 @@ def clean_local_folder(filename, path):
     file_path = os.path.join(path, filename)
     if os.path.exists(file_path):
         os.remove(file_path)
-        print("---------------------------------------------------------------------------")
         print(f"File deleted successfully from local folder!")
         print("---------------------------------------------------------------------------")
     else:
-        print("---------------------------------------------------------------------------")
         print(f"File does not exist in the specified path!")
         print("---------------------------------------------------------------------------")
 
-# OneDrive Upload
-# Authentication URL and credentials
-URL = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
-client_id = "d8e6ca27-806b-4368-aa7f-6df4db14976b"
-permissions = ["files.readwrite"]
-response_type = "token"
-redirect_uri = "http://localhost:8080/"
-scope = ""
-for items in range(len(permissions)):
-    scope = scope + permissions[items]
-    if items < len(permissions)-1:
-        scope = scope + "+"
+def authenticate_google_drive():
+    SCOPES = ["https://www.googleapis.com/auth/drive"]
+    credentials = None
+    if os.path.exists("google_token.json"):
+        credentials = Credentials.from_authorized_user_file("google_token.json", SCOPES)
 
-# Instructions for obtaining authentication code
-print("---------------------------------------------------------------------------")
-print("Click over this link:\n")
-print(URL + "?client_id=" + client_id + "&scope=" + scope + "&response_type=" + response_type+\
-     "&redirect_uri=" + urllib.parse.quote(redirect_uri))
-print("---------------------------------------------------------------------------")
-print("Sign in to your account, copy the whole redirected URL!")
-code = input("Paste the URL here:\n\n")
-print("---------------------------------------------------------------------------")
-token = code[(code.find("access_token") + len("access_token") + 1) : (code.find("&token_type"))]
+    if not credentials or not credentials.valid:
+        if credentials and credentials.expired and credentials.refresh_token:
+            credentials.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(r"E:\Accountability\Training\2024\credentials.json", SCOPES)
+            credentials = flow.run_local_server(port=0)
 
-# Authorization header for API requests
-URL = "https://graph.microsoft.com/v1.0/"
-HEADERS = {"Authorization": "Bearer " + token}
+        with open("google_token.json", "w") as token:
+            token.write(credentials.to_json())
 
-# Check response for authentication success
-response = requests.get(URL + "me/drive/", headers = HEADERS)
-if (response.status_code == 200):
-    response = json.loads(response.text)
-    print("Connected to OneDrive of", response["owner"]["user"]["displayName"]+ " (",response["driveType"]+" ).", \
-         "\nConnection valid for one hour. \nReauthenticate if required.")
-elif (response.status_code == 401):
-    response = json.loads(response.text)
-    print("API Error! : ", response["error"]["code"],\
-         "\nSee response for more details.")
-else:
-    response = json.loads(response.text)
-    print("Unknown error! See response for more details.")
+    return credentials
 
-# Upload file to OneDrive
-url = "me/drive/root:/ThePRogram2024.pdf:/content"
-url = URL + url
-content = open(pdf_path, "rb")
-response = json.loads(requests.put(url, headers=HEADERS, data = content).text)
-content.close()
-print("---------------------------------------------------------------------------")
-print("Uploaded file to OneDrive!")
+def authenticate_onedrive():
+    client_id = "d8e6ca27-806b-4368-aa7f-6df4db14976b"
+    redirect_uri = "http://localhost:8080/"
+    scope = "files.readwrite"
+    
+    # Check if token file exists and if credentials are valid, otherwise authenticate
+    if os.path.exists("onedrive_token.json"):
+        with open("onedrive_token.json", "r") as token_file:
+            token_data = json.load(token_file)
+            access_token = token_data.get("access_token")
+            expires_at = token_data.get("expires_at")
+
+            if access_token and expires_at > time.time():
+                return access_token
+
+    # Authentication URL
+    auth_url = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
+    auth_params = {
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "scope": scope,
+        "response_type": "token"
+    }
+    print("---------------------------------------------------------------------------")
+    print("Click on this link to authenticate with OneDrive:\n")
+    print(auth_url + "?" + urllib.parse.urlencode(auth_params))
+    print("---------------------------------------------------------------------------")
+    
+    # Obtain access token from user
+    code = input("Copy the whole redirected URL here:\n\n")
+    access_token = code[(code.find("access_token") + len("access_token") + 1) : (code.find("&token_type"))]
+    
+    # Save access token to file
+    with open("onedrive_token.json", "w") as token_file:
+        token_data = {
+            "access_token": access_token,
+            "expires_at": time.time() + 2.628e+6  # Token valid for one month
+        }
+        json.dump(token_data, token_file)
+    
+    return access_token
 
 # Google Drive Upload
-# Authorization and Authentication
-SCOPES = ["https://www.googleapis.com/auth/drive"]
-
-# Check if token file exists and if credentials are valid, otherwise authenticate
-credentials = None
-if os.path.exists("token.json"):
-    credentials = Credentials.from_authorized_user_file("token.json", SCOPES)
-
-if not credentials or not credentials.valid:
-    if credentials and credentials.expired and credentials.refresh_token:
-        credentials.refresh(Request())
-    else:
-        flow = InstalledAppFlow.from_client_secrets_file(r"E:\Accountability\Training\2024\credentials.json", SCOPES)
-        credentials = flow.run_local_server(port=0)
-
-    # Save new token to file
-    with open("token.json", "w") as token:
-        token.write(credentials.to_json())
-
-# Upload file to Google Drive
 try:
+    credentials = authenticate_google_drive()
     service = build("drive", "v3", credentials=credentials)
 
-    # Check if PRogram1 folder exists, create if it doesn't
     response = service.files().list(
         q="name='PRogram1' and mimeType='application/vnd.google-apps.folder'",
         spaces="drive"
@@ -125,7 +112,6 @@ try:
     else:
         folder_id = response["files"][0]["id"]
 
-    # Check if ThePRogram2024.pdf already exists in PRogram1 folder, delete if it does
     response = service.files().list(
         q="name='ThePRogram2024.pdf' and '" + folder_id + "' in parents",
         spaces="drive"
@@ -137,24 +123,47 @@ try:
         print("---------------------------------------------------------------------------")
         print("Deleted existing file from Google Drive!")
 
-    # Upload the new version of ThePRogram2024.pdf
     file_name = "ThePRogram2024.pdf"
     file_metadata = {
         "name": file_name,
         "parents": [folder_id]
     }
-    
+
     media = MediaFileUpload(r"E:\Accountability\Training\2024\ThePRogram2024.pdf")
     upload_file = service.files().create(body=file_metadata,
                                          media_body=media,
                                          fields="id").execute()
-    
+
     media.stream().close()
     print("---------------------------------------------------------------------------")
     print("Uploaded file to Google Drive!")
 
 except HttpError as e:
     print("Error: " + str(e))
+
+# OneDrive Upload
+try:
+    access_token = authenticate_onedrive()
+
+    upload_url = "https://graph.microsoft.com/v1.0/me/drive/root:/ThePRogram2024.pdf:/content"
+    headers = {"Authorization": "Bearer " + access_token}
+    file_content = open(pdf_path, "rb")
+    response = requests.put(upload_url, headers=headers, data=file_content)
+    file_content.close()
+
+    if response.status_code == 200:
+        print("---------------------------------------------------------------------------")
+        print("Uploaded file to OneDrive!")
+        print("---------------------------------------------------------------------------")
+    else:
+        print("---------------------------------------------------------------------------")
+        print("Error uploading file to OneDrive:", response.text)
+        print("---------------------------------------------------------------------------")
+
+except Exception as e:
+    print("---------------------------------------------------------------------------")
+    print("Error:", str(e))
+    print("---------------------------------------------------------------------------")
 
 clean_local_folder(r"ThePRogram2024.pdf", r"E:\Accountability\Training\2024")
 
