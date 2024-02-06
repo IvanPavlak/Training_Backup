@@ -15,9 +15,11 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 # Convert .docx to .pdf
+print("---------------------------------------------------------------------------")
+print('Converting ".docx" to ".pdf":\n')
 docx_path = r"E:\Accountability\Training\2024\ThePRogram2024.docx"  
 pdf_path = r"E:\Accountability\Training\2024\ThePRogram2024.pdf"  
-convert(docx_path, pdf_path)  # Convert DOCX to PDF
+convert(docx_path, pdf_path)
 
 def clean_local_folder(filename, path):
     file_path = os.path.join(path, filename)
