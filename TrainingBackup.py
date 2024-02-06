@@ -5,7 +5,7 @@ import json
 import urllib
 import requests
 from getpass import getpass
-from docx2pdf import convert
+from docx2pdf import convert 
 from datetime import datetime
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -15,11 +15,10 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 # Convert .docx to .pdf
-docx_path = r"E:\Accountability\Training\2024\ThePRogram2024.docx"
-pdf_path = r"E:\Accountability\Training\2024\ThePRogram2024.pdf"
-convert(docx_path, pdf_path)
+docx_path = r"E:\Accountability\Training\2024\ThePRogram2024.docx"  
+pdf_path = r"E:\Accountability\Training\2024\ThePRogram2024.pdf"  
+convert(docx_path, pdf_path)  # Convert DOCX to PDF
 
-# Delete local PDF file
 def clean_local_folder(filename, path):
     file_path = os.path.join(path, filename)
     if os.path.exists(file_path):
@@ -30,6 +29,7 @@ def clean_local_folder(filename, path):
         print(f"File does not exist in the specified path!")
         print("---------------------------------------------------------------------------")
 
+# Authenticate with Google Drive
 def authenticate_google_drive():
     SCOPES = ["https://www.googleapis.com/auth/drive"]
     credentials = None
@@ -48,12 +48,12 @@ def authenticate_google_drive():
 
     return credentials
 
+# Authenticate with OneDrive
 def authenticate_onedrive():
-    client_id = "d8e6ca27-806b-4368-aa7f-6df4db14976b"
-    redirect_uri = "http://localhost:8080/"
-    scope = "files.readwrite"
+    client_id = "d8e6ca27-806b-4368-aa7f-6df4db14976b"  
+    redirect_uri = "http://localhost:8080/"  
+    scope = "files.readwrite"  
     
-    # Check if token file exists and if credentials are valid, otherwise authenticate
     if os.path.exists("onedrive_token.json"):
         with open("onedrive_token.json", "r") as token_file:
             token_data = json.load(token_file)
@@ -63,7 +63,6 @@ def authenticate_onedrive():
             if access_token and expires_at > time.time():
                 return access_token
 
-    # Authentication URL
     auth_url = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
     auth_params = {
         "client_id": client_id,
@@ -76,11 +75,9 @@ def authenticate_onedrive():
     print(auth_url + "?" + urllib.parse.urlencode(auth_params))
     print("---------------------------------------------------------------------------")
     
-    # Obtain access token from user
     code = input("Copy the whole redirected URL here:\n\n")
     access_token = code[(code.find("access_token") + len("access_token") + 1) : (code.find("&token_type"))]
     
-    # Save access token to file
     with open("onedrive_token.json", "w") as token_file:
         token_data = {
             "access_token": access_token,
@@ -167,4 +164,4 @@ except Exception as e:
 
 clean_local_folder(r"ThePRogram2024.pdf", r"E:\Accountability\Training\2024")
 
-time.sleep(5)
+time.sleep(10)
