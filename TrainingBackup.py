@@ -82,7 +82,7 @@ def authenticate_onedrive():
     with open("onedrive_token.json", "w") as token_file:
         token_data = {
             "access_token": access_token,
-            "expires_at": time.time() + 2.628e+6  # Token valid for one month
+            "expires_at": time.time() + 3600
         }
         json.dump(token_data, token_file)
     
