@@ -27,10 +27,10 @@ convert(docx_path, pdf_path)
 def clean_local_folder(file):
     if os.path.exists(file):
         os.remove(file)
-        print(f"{file} deleted successfully from local folder!")
+        print(f+'"{file}" deleted successfully from local folder!')
         print("--------------------------------------------------------------------------------")
     else:
-        print(f"{file} does not exist in the specified path!")
+        print(f'"{file}" does not exist in the specified path!')
         print("--------------------------------------------------------------------------------")
 
 # Authenticate with One Drive
