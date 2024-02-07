@@ -6,7 +6,6 @@ import urllib
 import requests
 from getpass import getpass
 from docx2pdf import convert 
-from datetime import datetime
 from pypdf import PdfWriter, PdfReader
 from urllib.parse import urlparse, parse_qs
 from googleapiclient.discovery import build
