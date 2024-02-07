@@ -17,7 +17,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 
 
 # Convert .docx to .pdf
-print('--------------------------------------------------------------------------------')
+print("--------------------------------------------------------------------------------")
 print('Converting ".docx" to ".pdf":\n')
 docx_path = r"E:\Accountability\Training\2024\ThePRogram2024.docx"  
 pdf_path = r"E:\Accountability\Training\2024\ThePRogram2024.pdf"  
@@ -27,10 +27,10 @@ def clean_local_folder(file):
     if os.path.exists(file):
         os.remove(file)
         print(f"File deleted successfully from local folder!")
-        print('--------------------------------------------------------------------------------')
+        print("--------------------------------------------------------------------------------")
     else:
         print(f"File does not exist in the specified path!")
-        print('--------------------------------------------------------------------------------')
+        print("--------------------------------------------------------------------------------")
 
 # Authenticate with One Drive
 def authenticate_onedrive():
@@ -61,11 +61,11 @@ def authenticate_onedrive():
         "response_type": "code"
     }
     
-    print('--------------------------------------------------------------------------------')
+    print("--------------------------------------------------------------------------------")
     print("Click on this link to authenticate with OneDrive:\n")
     print(auth_url + "?" + urllib.parse.urlencode(auth_params))
     
-    print('--------------------------------------------------------------------------------')
+    print("--------------------------------------------------------------------------------")
     url = input("Copy the redirected URL here:\n\n")
     code = parse_qs(urlparse(url).query).get('code', [''])[0]   
 
@@ -138,14 +138,14 @@ try:
     file_content.close()
 
     if response.status_code == 200:
-        print('--------------------------------------------------------------------------------')
+        print("--------------------------------------------------------------------------------")
         print("Uploaded file to OneDrive!")
     else:
-        print('--------------------------------------------------------------------------------')
+        print("--------------------------------------------------------------------------------")
         print("Error uploading file to OneDrive:", response.text)
 
 except Exception as e:
-    print('--------------------------------------------------------------------------------')
+    print("--------------------------------------------------------------------------------")
     print("Error:", str(e))
 
 # Authenticate with Google Drive
@@ -197,7 +197,7 @@ try:
     if response["files"]:
         file_id = response["files"][0]["id"]
         service.files().delete(fileId=file_id).execute()
-        print('--------------------------------------------------------------------------------')
+        print("--------------------------------------------------------------------------------")
         print("Deleted existing file from Google Drive!")
 
     file_name = "ThePRogram2024.pdf"
@@ -212,14 +212,14 @@ try:
                                          fields="id").execute()
     
     media.stream().close()
-    print('--------------------------------------------------------------------------------')
+    print("--------------------------------------------------------------------------------")
     print("Uploaded file to Google Drive!")
 
 except HttpError as e:
-    print('--------------------------------------------------------------------------------')
+    print("--------------------------------------------------------------------------------")
     print("Error: " + str(e))
 
-print('--------------------------------------------------------------------------------')
+print("--------------------------------------------------------------------------------")
 clean_local_folder(pdf_path)
 
 time.sleep(5)
