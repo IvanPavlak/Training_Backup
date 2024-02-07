@@ -20,12 +20,19 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 print("--------------------------------------------------------------------------------")
 print('Converting ".docx" to ".pdf":\n')
 docx_path = r"E:\Accountability\Training\2024\ThePRogram2024.docx"  
-pdf_path = r"E:\Accountability\Training\2024\ThePRogram2024.pdf"  
+pdf_path = r"E:\Accountability\Training\2024\ThePRogram2024.pdf"
 convert(docx_path, pdf_path)
 
-def clean_local_folder(file):
-    if os.path.exists(file):
-        os.remove(file)
+credentials_path = r"E:\Accountability\Training\2024\TrainingBackupCredentials\credentials.json"
+google_token_path = r"E:\Accountability\Training\2024\TrainingBackupCredentials\google_token.json"
+onedrive_token_path = r"E:\Accountability\Training\2024\TrainingBackupCredentials\onedrive_token.json"
+
+training_pdf_path = r"E:\Accountability\Training\2024\Training.pdf"
+
+def clean_local_folder(file_path):
+    file = os.path.basename(file_path)
+    if os.path.exists(file_path):
+        os.remove(file_path)
         print(f'"{file}" deleted successfully from local folder!')
         print("--------------------------------------------------------------------------------")
     else:
@@ -38,8 +45,8 @@ def authenticate_onedrive():
     redirect_uri = "http://localhost:8080/"  
     scope = "files.readwrite offline_access"
 
-    if os.path.exists("onedrive_token.json"):
-        with open("onedrive_token.json", "r") as token_file:
+    if os.path.exists(onedrive_token_path):
+        with open(onedrive_token_path, "r") as token_file:
             token_data = json.load(token_file)
             access_token = token_data.get("access_token")
             expires_at = token_data.get("expires_at")
@@ -71,7 +78,7 @@ def authenticate_onedrive():
 
     access_token, expires_at, refresh_token = exchange_code_for_tokens(code)
 
-    with open("onedrive_token.json", "w") as token_file:
+    with open(onedrive_token_path, "w") as token_file:
         token_data = {
             "access_token": access_token,
             "expires_at": expires_at,
@@ -137,12 +144,12 @@ try:
     writer = PdfWriter()
     writer.add_page(last_page)
 
-    with open("Training.pdf", "wb") as output_pdf:
+    with open(training_pdf_path, "wb") as output_pdf:
         writer.write(output_pdf)
 
     upload_url = "https://graph.microsoft.com/v1.0/me/drive/root:/Training.pdf:/content"
     headers = {"Authorization": "Bearer " + access_token}
-    file_content = open("Training.pdf", "rb")
+    file_content = open(training_pdf_path, "rb")
     response = requests.put(upload_url, headers=headers, data=file_content)
     file_content.close()
 
@@ -161,17 +168,17 @@ except Exception as e:
 def authenticate_google_drive():
     SCOPES = ["https://www.googleapis.com/auth/drive"]
     credentials = None
-    if os.path.exists("google_token.json"):
-        credentials = Credentials.from_authorized_user_file("google_token.json", SCOPES)
+    if os.path.exists(google_token_path):
+        credentials = Credentials.from_authorized_user_file(google_token_path, SCOPES)
 
     if not credentials or not credentials.valid:
         if credentials and credentials.expired and credentials.refresh_token:
             credentials.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(r"E:\Accountability\Training\2024\credentials.json", SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
             credentials = flow.run_local_server(port=0)
 
-        with open("google_token.json", "w") as token:
+        with open(google_token_path, "w") as token:
             token.write(credentials.to_json())
 
     return credentials
@@ -215,7 +222,7 @@ try:
         "parents": [folder_id]
     }
 
-    media = MediaFileUpload(r"E:\Accountability\Training\2024\ThePRogram2024.pdf")
+    media = MediaFileUpload(pdf_path)
     upload_file = service.files().create(body=file_metadata,
                                          media_body=media,
                                          fields="id").execute()
@@ -229,7 +236,7 @@ except HttpError as e:
     print("Error: " + str(e))
 
 print("--------------------------------------------------------------------------------")
-clean_local_folder("ThePRogram2024.pdf")
-clean_local_folder("Training.pdf")
+clean_local_folder(training_pdf_path)
+clean_local_folder(pdf_path)
 
 time.sleep(5)
