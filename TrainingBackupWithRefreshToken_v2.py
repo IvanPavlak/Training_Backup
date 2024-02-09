@@ -40,8 +40,11 @@ def clean_local_folder(file_path):
         print("--------------------------------------------------------------------------------")
 
 # Authenticate with One Drive
-def authenticate_onedrive():
-    client_id = "d8e6ca27-806b-4368-aa7f-6df4db14976b"  
+
+onedrive_client_id = "d8e6ca27-806b-4368-aa7f-6df4db14976b"
+onedrive_client_secret = "psu8Q~QyZ4odKo.CfBLwvWGkTZc1m5eXbGVKWasK" 
+
+def authenticate_onedrive(): 
     redirect_uri = "http://localhost:8080/"  
     scope = "files.readwrite offline_access"
 
@@ -62,7 +65,7 @@ def authenticate_onedrive():
 
     auth_url = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
     auth_params = {
-        "client_id": client_id,
+        "client_id": onedrive_client_id,
         "redirect_uri": redirect_uri,
         "scope": scope,
         "response_type": "code"
@@ -89,14 +92,12 @@ def authenticate_onedrive():
     return access_token
 
 def exchange_code_for_tokens(code):
-    client_id = "d8e6ca27-806b-4368-aa7f-6df4db14976b"
-    client_secret = "psu8Q~QyZ4odKo.CfBLwvWGkTZc1m5eXbGVKWasK" 
     redirect_uri = "http://localhost:8080/"
     token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
     
     token_params = {
-        "client_id": client_id,
-        "client_secret": client_secret,
+        "client_id": onedrive_client_id,
+        "client_secret": onedrive_client_secret,
         "code": code,
         "redirect_uri": redirect_uri,
         "grant_type": "authorization_code"
@@ -112,14 +113,12 @@ def exchange_code_for_tokens(code):
     
     return access_token, expires_at, refresh_token
 
-def refresh_access_token(refresh_token):
-    client_id = "d8e6ca27-806b-4368-aa7f-6df4db14976b"
-    client_secret = "psu8Q~QyZ4odKo.CfBLwvWGkTZc1m5eXbGVKWasK" 
+def refresh_access_token(refresh_token): 
     token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
     
     token_params = {
-        "client_id": client_id,
-        "client_secret": client_secret,
+        "client_id": onedrive_client_id,
+        "client_secret": onedrive_client_secret,
         "refresh_token": refresh_token,
         "grant_type": "refresh_token"
     }
