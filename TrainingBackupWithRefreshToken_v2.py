@@ -237,5 +237,6 @@ except HttpError as e:
 print("--------------------------------------------------------------------------------")
 clean_local_folder(training_pdf_path)
 clean_local_folder(pdf_path)
+print("\n")
 
 time.sleep(5)
