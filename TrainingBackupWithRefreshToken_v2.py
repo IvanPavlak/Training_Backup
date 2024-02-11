@@ -40,7 +40,6 @@ def clean_local_folder(file_path):
         print("--------------------------------------------------------------------------------")
 
 # Authenticate with One Drive
-
 onedrive_client_id = "d8e6ca27-806b-4368-aa7f-6df4db14976b"
 onedrive_client_secret = "psu8Q~QyZ4odKo.CfBLwvWGkTZc1m5eXbGVKWasK" 
 
