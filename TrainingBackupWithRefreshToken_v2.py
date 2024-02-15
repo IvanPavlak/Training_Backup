@@ -4,7 +4,6 @@ import time
 import json
 import urllib
 import requests
-from getpass import getpass
 from docx2pdf import convert 
 from pypdf import PdfWriter, PdfReader
 from urllib.parse import urlparse, parse_qs
@@ -15,20 +14,31 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 
+# Paths
+training_folder = r"E:\Accountability\Training\2024"
+
+docx_path = os.path.join(training_folder, "ThePRogram2024.docx")
+pdf_path = os.path.join(training_folder, "ThePRogram2024.pdf")
+training_pdf_path = os.path.join(training_folder, "Training.pdf")
+
+credentials_path = os.path.join(training_folder, "TrainingBackupCredentials", "credentials.json")
+google_token_path = os.path.join(training_folder, "TrainingBackupCredentials", "google_token.json")
+onedrive_token_path = os.path.join(training_folder, "TrainingBackupCredentials", "onedrive_token.json")
+
+onedrive_client_id = "d8e6ca27-806b-4368-aa7f-6df4db14976b"
+onedrive_client_secret = "psu8Q~QyZ4odKo.CfBLwvWGkTZc1m5eXbGVKWasK"
+
+redirect_uri = "http://localhost:8080/"
+token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 
 # Convert .docx to .pdf
 print("--------------------------------------------------------------------------------")
 print('Converting ".docx" to ".pdf":\n')
-docx_path = r"E:\Accountability\Training\2024\ThePRogram2024.docx"  
-pdf_path = r"E:\Accountability\Training\2024\ThePRogram2024.pdf"
+docx_path = os.path.join(training_folder, "ThePRogram2024.docx")
+pdf_path = os.path.join(training_folder, "ThePRogram2024.pdf")
 convert(docx_path, pdf_path)
 
-credentials_path = r"E:\Accountability\Training\2024\TrainingBackupCredentials\credentials.json"
-google_token_path = r"E:\Accountability\Training\2024\TrainingBackupCredentials\google_token.json"
-onedrive_token_path = r"E:\Accountability\Training\2024\TrainingBackupCredentials\onedrive_token.json"
-
-training_pdf_path = r"E:\Accountability\Training\2024\Training.pdf"
-
+# Delete local files
 def clean_local_folder(file_path):
     file = os.path.basename(file_path)
     if os.path.exists(file_path):
@@ -40,9 +50,6 @@ def clean_local_folder(file_path):
         print("--------------------------------------------------------------------------------")
 
 # Authenticate with One Drive
-onedrive_client_id = "d8e6ca27-806b-4368-aa7f-6df4db14976b"
-onedrive_client_secret = "psu8Q~QyZ4odKo.CfBLwvWGkTZc1m5eXbGVKWasK" 
-
 def authenticate_onedrive(): 
     redirect_uri = "http://localhost:8080/"  
     scope = "files.readwrite offline_access"
@@ -91,8 +98,6 @@ def authenticate_onedrive():
     return access_token
 
 def exchange_code_for_tokens(code):
-    redirect_uri = "http://localhost:8080/"
-    token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
     
     token_params = {
         "client_id": onedrive_client_id,
@@ -113,7 +118,6 @@ def exchange_code_for_tokens(code):
     return access_token, expires_at, refresh_token
 
 def refresh_access_token(refresh_token): 
-    token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
     
     token_params = {
         "client_id": onedrive_client_id,
