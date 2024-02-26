@@ -9,7 +9,7 @@ ___
 	- Client ID 
 	- Client Secret -> Created additionally in "Certificates & Secrets" section.
 	- Both must be copied into a `onedrive_credentials.json`:
-```json
+```
 {
     "client_id": "client_id",
     "client_secret": "secret_id"
