@@ -16,7 +16,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 
 # Paths
 training_folder = r"E:\Accountability\Training\2024"
-credentials_folder = r"E:\GitHub\VSCode_Windows\Training_Backup"
+credentials_folder = r"E:\VSCode\GitHub\Training_Backup"
 
 docx_path = os.path.join(training_folder, "ThePRogram2024.docx")
 pdf_path = os.path.join(training_folder, "ThePRogram2024.pdf")
