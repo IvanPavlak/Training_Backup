@@ -24,9 +24,14 @@ training_pdf_path = os.path.join(training_folder, "Training.pdf")
 credentials_path = os.path.join(training_folder, "TrainingBackupCredentials", "credentials.json")
 google_token_path = os.path.join(training_folder, "TrainingBackupCredentials", "google_token.json")
 onedrive_token_path = os.path.join(training_folder, "TrainingBackupCredentials", "onedrive_token.json")
+onedrive_client_id_path = os.path.join(training_folder, "TrainingBackupCredentials", "onedrive_client_id.txt")
+onedrive_client_secret_path = os.path.join(training_folder, "TrainingBackupCredentials", "onedrive_client_secret.txt")
 
-onedrive_client_id = "d8e6ca27-806b-4368-aa7f-6df4db14976b"
-onedrive_client_secret = "psu8Q~QyZ4odKo.CfBLwvWGkTZc1m5eXbGVKWasK"
+with open(onedrive_client_id_path, "r") as id_file:
+    onedrive_client_id = id_file.read()
+
+with open(onedrive_client_secret_path, "r") as secret_file:
+    onedrive_client_secret = secret_file.read()
 
 redirect_uri = "http://localhost:8080/"
 token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
@@ -52,7 +57,7 @@ def clean_local_folder(file_path):
 # Authenticate with One Drive
 def authenticate_onedrive(): 
     redirect_uri = "http://localhost:8080/"  
-    scope = "files.readwrite offline_access"
+    scope = "Files.ReadWrite offline_access"
 
     if os.path.exists(onedrive_token_path):
         with open(onedrive_token_path, "r") as token_file:
