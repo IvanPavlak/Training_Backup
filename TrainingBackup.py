@@ -28,12 +28,12 @@ google_credentials_path = os.path.join(credentials_folder, "TrainingBackupCreden
 onedrive_token_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "onedrive_token.json")
 one_drive_credentials_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "onedrive_credentials.json")
 
+# Global Variables
 with open(one_drive_credentials_path, 'r') as f:
     credentials = json.load(f)
 
 onedrive_client_id = credentials.get("client_id")
 onedrive_client_secret = credentials.get("client_secret")
-
 redirect_uri = "http://localhost:8080/"
 token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 
@@ -55,7 +55,7 @@ def clean_local_folder(file_path):
         print(f'"{file}" does not exist in the specified path!')
         print("--------------------------------------------------------------------------------")
 
-# Authenticate with One Drive
+# One Drive Authentication
 def authenticate_onedrive(): 
     scope = "files.readwrite offline_access"
 
@@ -84,7 +84,6 @@ def authenticate_onedrive():
     
     print("Click on this link to authenticate with OneDrive:\n")
     print(auth_url + "?" + urllib.parse.urlencode(auth_params))
-    
     print("--------------------------------------------------------------------------------")
     url = input("Copy the redirected URL here:\n\n")
     code = parse_qs(urlparse(url).query).get('code', [''])[0]   
@@ -102,7 +101,6 @@ def authenticate_onedrive():
     return access_token
 
 def exchange_code_for_tokens(code):
-    
     token_params = {
         "client_id": onedrive_client_id,
         "client_secret": onedrive_client_secret,
@@ -122,7 +120,6 @@ def exchange_code_for_tokens(code):
     return access_token, expires_at, refresh_token
 
 def refresh_access_token(refresh_token): 
-    
     token_params = {
         "client_id": onedrive_client_id,
         "client_secret": onedrive_client_secret,
@@ -140,6 +137,7 @@ def refresh_access_token(refresh_token):
     
     return access_token, expires_at, new_refresh_token
 
+# One Drive Upload
 def upload_to_onedrive(access_token):
     try:
         reader = PdfReader(pdf_path)
@@ -168,6 +166,7 @@ def upload_to_onedrive(access_token):
         print("--------------------------------------------------------------------------------")
         print("Error:", str(e))
 
+# Google Drive Authentication
 def authenticate_google_drive():
     SCOPES = ["https://www.googleapis.com/auth/drive"]
     credentials = None
@@ -186,6 +185,7 @@ def authenticate_google_drive():
 
     return credentials
 
+# Google Drive Upload
 def upload_to_google_drive(credentials):
     try:
         service = build("drive", "v3", credentials=credentials)
@@ -242,6 +242,4 @@ upload_to_google_drive(authenticate_google_drive())
 print("--------------------------------------------------------------------------------")
 clean_local_folder(training_pdf_path)
 clean_local_folder(pdf_path)
-print("\n")
-
 time.sleep(5)
