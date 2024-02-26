@@ -16,14 +16,15 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 
 # Paths
 training_folder = r"E:\Accountability\Training\2024"
+credentials_folder = r"E:\GitHub\VSCode_Windows\Training_Backup"
 
 docx_path = os.path.join(training_folder, "ThePRogram2024.docx")
 pdf_path = os.path.join(training_folder, "ThePRogram2024.pdf")
 training_pdf_path = os.path.join(training_folder, "Training.pdf")
 
-credentials_path = os.path.join(training_folder, "TrainingBackupCredentials", "credentials.json")
-google_token_path = os.path.join(training_folder, "TrainingBackupCredentials", "google_token.json")
-onedrive_token_path = os.path.join(training_folder, "TrainingBackupCredentials", "onedrive_token.json")
+credentials_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "credentials.json")
+google_token_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "google_token.json")
+onedrive_token_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "onedrive_token.json")
 
 onedrive_client_id = "b378dfa7-1253-4b9d-85f9-5d7f834d18ec"
 onedrive_client_secret = "VUe8Q~8Ir6IGTNuFUBNTuXYbOL.JJlzWalNrkcTd"
@@ -77,7 +78,6 @@ def authenticate_onedrive():
         "response_type": "code"
     }
     
-    print("--------------------------------------------------------------------------------")
     print("Click on this link to authenticate with OneDrive:\n")
     print(auth_url + "?" + urllib.parse.urlencode(auth_params))
     
@@ -136,37 +136,34 @@ def refresh_access_token(refresh_token):
     
     return access_token, expires_at, new_refresh_token
 
-access_token = authenticate_onedrive()
+def upload_to_onedrive(access_token):
+    try:
+        reader = PdfReader(pdf_path)
+        last_page = reader.pages[-1]
 
-# OneDrive Upload
-try:
-    reader = PdfReader(pdf_path)
-    last_page = reader.pages[-1]
+        writer = PdfWriter()
+        writer.add_page(last_page)
 
-    writer = PdfWriter()
-    writer.add_page(last_page)
+        with open(training_pdf_path, "wb") as output_pdf:
+            writer.write(output_pdf)
 
-    with open(training_pdf_path, "wb") as output_pdf:
-        writer.write(output_pdf)
+        upload_url = "https://graph.microsoft.com/v1.0/me/drive/root:/Training.pdf:/content"
+        headers = {"Authorization": "Bearer " + access_token}
+        file_content = open(training_pdf_path, "rb")
+        response = requests.put(upload_url, headers=headers, data=file_content)
+        file_content.close()
 
-    upload_url = "https://graph.microsoft.com/v1.0/me/drive/root:/Training.pdf:/content"
-    headers = {"Authorization": "Bearer " + access_token}
-    file_content = open(training_pdf_path, "rb")
-    response = requests.put(upload_url, headers=headers, data=file_content)
-    file_content.close()
+        if response.status_code == 200:
+            print("--------------------------------------------------------------------------------")
+            print("Uploaded file to OneDrive!")
+        else:
+            print("--------------------------------------------------------------------------------")
+            print("Error uploading file to OneDrive:", response.text)
 
-    if response.status_code == 200:
+    except Exception as e:
         print("--------------------------------------------------------------------------------")
-        print("Uploaded file to OneDrive!")
-    else:
-        print("--------------------------------------------------------------------------------")
-        print("Error uploading file to OneDrive:", response.text)
+        print("Error:", str(e))
 
-except Exception as e:
-    print("--------------------------------------------------------------------------------")
-    print("Error:", str(e))
-
-# Authenticate with Google Drive
 def authenticate_google_drive():
     SCOPES = ["https://www.googleapis.com/auth/drive"]
     credentials = None
@@ -185,58 +182,59 @@ def authenticate_google_drive():
 
     return credentials
 
-# Google Drive Upload
-try:
-    credentials = authenticate_google_drive()
-    service = build("drive", "v3", credentials=credentials)
+def upload_to_google_drive(credentials):
+    try:
+        service = build("drive", "v3", credentials=credentials)
 
-    response = service.files().list(
-        q="name='PRogram1' and mimeType='application/vnd.google-apps.folder'",
-        spaces="drive"
-    ).execute()
+        response = service.files().list(
+            q="name='PRogram1' and mimeType='application/vnd.google-apps.folder'",
+            spaces="drive"
+        ).execute()
 
-    if not response["files"]:
+        if not response["files"]:
+            file_metadata = {
+                "name": "PRogram1",
+                "mimeType": "application/vnd.google-apps.folder"
+            }
+
+            file = service.files().create(body=file_metadata, fields="id").execute()
+
+            folder_id = file.get("id")
+        else:
+            folder_id = response["files"][0]["id"]
+
+        response = service.files().list(
+            q="name='ThePRogram2024.pdf' and '" + folder_id + "' in parents",
+            spaces="drive"
+        ).execute()
+
+        if response["files"]:
+            file_id = response["files"][0]["id"]
+            service.files().delete(fileId=file_id).execute()
+            print("--------------------------------------------------------------------------------")
+            print("Deleted existing file from Google Drive!")
+
+        file_name = "ThePRogram2024.pdf"
         file_metadata = {
-            "name": "PRogram1",
-            "mimeType": "application/vnd.google-apps.folder"
+            "name": file_name,
+            "parents": [folder_id]
         }
 
-        file = service.files().create(body=file_metadata, fields="id").execute()
-
-        folder_id = file.get("id")
-    else:
-        folder_id = response["files"][0]["id"]
-
-    response = service.files().list(
-        q="name='ThePRogram2024.pdf' and '" + folder_id + "' in parents",
-        spaces="drive"
-    ).execute()
-
-    if response["files"]:
-        file_id = response["files"][0]["id"]
-        service.files().delete(fileId=file_id).execute()
+        media = MediaFileUpload(pdf_path)
+        upload_file = service.files().create(body=file_metadata,
+                                             media_body=media,
+                                             fields="id").execute()
+        
+        media.stream().close()
         print("--------------------------------------------------------------------------------")
-        print("Deleted existing file from Google Drive!")
+        print("Uploaded file to Google Drive!")
 
-    file_name = "ThePRogram2024.pdf"
-    file_metadata = {
-        "name": file_name,
-        "parents": [folder_id]
-    }
+    except HttpError as e:
+        print("--------------------------------------------------------------------------------")
+        print("Error: " + str(e))
 
-    media = MediaFileUpload(pdf_path)
-    upload_file = service.files().create(body=file_metadata,
-                                         media_body=media,
-                                         fields="id").execute()
-    
-    media.stream().close()
-    print("--------------------------------------------------------------------------------")
-    print("Uploaded file to Google Drive!")
-
-except HttpError as e:
-    print("--------------------------------------------------------------------------------")
-    print("Error: " + str(e))
-
+upload_to_onedrive(authenticate_onedrive())
+upload_to_google_drive(authenticate_google_drive())
 print("--------------------------------------------------------------------------------")
 clean_local_folder(training_pdf_path)
 clean_local_folder(pdf_path)
