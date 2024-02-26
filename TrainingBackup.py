@@ -22,12 +22,17 @@ docx_path = os.path.join(training_folder, "ThePRogram2024.docx")
 pdf_path = os.path.join(training_folder, "ThePRogram2024.pdf")
 training_pdf_path = os.path.join(training_folder, "Training.pdf")
 
-credentials_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "credentials.json")
 google_token_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "google_token.json")
-onedrive_token_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "onedrive_token.json")
+google_credentials_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "google_credentials.json")
 
-onedrive_client_id = "b378dfa7-1253-4b9d-85f9-5d7f834d18ec"
-onedrive_client_secret = "VUe8Q~8Ir6IGTNuFUBNTuXYbOL.JJlzWalNrkcTd"
+onedrive_token_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "onedrive_token.json")
+one_drive_credentials_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "onedrive_credentials.json")
+
+with open(one_drive_credentials_path, 'r') as f:
+    credentials = json.load(f)
+
+onedrive_client_id = credentials.get("client_id")
+onedrive_client_secret = credentials.get("client_secret")
 
 redirect_uri = "http://localhost:8080/"
 token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
@@ -52,7 +57,6 @@ def clean_local_folder(file_path):
 
 # Authenticate with One Drive
 def authenticate_onedrive(): 
-    redirect_uri = "http://localhost:8080/"  
     scope = "files.readwrite offline_access"
 
     if os.path.exists(onedrive_token_path):
@@ -174,7 +178,7 @@ def authenticate_google_drive():
         if credentials and credentials.expired and credentials.refresh_token:
             credentials.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file(google_credentials_path, SCOPES)
             credentials = flow.run_local_server(port=0)
 
         with open(google_token_path, "w") as token:
