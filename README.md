@@ -39,7 +39,7 @@ ___
 
 1. Clone or download this repository to the local machine.
 2. Copy the `TrainingBackupCredentials` folder in it.
-3. Create a conda environment using `TrainingBackupRequirements.txt`.
+3. Create a conda environment with the necessary dependencies.
 4. Modify the paths in the `TrainingBackup.bat` file to call the right `activate.bat` and `miniconda3` (or Anaconda) on your machine.
 5. Modify the path of the python call in the `TrainingBackup.bat` to the `TrainingBackup.py` in cloned/downloaded repository.
 6. Modify in `TrainingBackup.py`:
