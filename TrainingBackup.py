@@ -40,8 +40,6 @@ token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 # Convert .docx to .pdf
 print("--------------------------------------------------------------------------------")
 print('Converting ".docx" to ".pdf":\n')
-docx_path = os.path.join(training_folder, "ThePRogram2024.docx")
-pdf_path = os.path.join(training_folder, "ThePRogram2024.pdf")
 convert(docx_path, pdf_path)
 
 # Delete local files
