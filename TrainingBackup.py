@@ -172,6 +172,7 @@ def authenticate_google_drive():
         credentials = Credentials.from_authorized_user_file(google_token_path, SCOPES)
 
     if not credentials or not credentials.valid:
+        print("--------------------------------------------------------------------------------")
         if credentials and credentials.expired and credentials.refresh_token:
             credentials.refresh(Request())
         else:
