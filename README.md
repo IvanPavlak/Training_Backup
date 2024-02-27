@@ -12,7 +12,7 @@ ___
 ```
 {
     "client_id": "client_id",
-    "client_secret": "secret_id"
+    "client_secret": "secret_value"
 }
 ```
 
