@@ -16,17 +16,17 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 
 # Paths
 training_folder = r"E:\Accountability\Training\2024"
-credentials_folder = r"E:\VSCode\GitHub\Training_Backup"
+credentials_folder = r"E:\VSCode\GitHub\Training_Backup\TrainingBackupCredentials"
 
 docx_path = os.path.join(training_folder, "ThePRogram2024.docx")
 pdf_path = os.path.join(training_folder, "ThePRogram2024.pdf")
 training_pdf_path = os.path.join(training_folder, "Training.pdf")
 
-google_token_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "google_token.json")
-google_credentials_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "google_credentials.json")
+google_token_path = os.path.join(credentials_folder, "google_token.json")
+google_credentials_path = os.path.join(credentials_folder, "google_credentials.json")
 
-onedrive_token_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "onedrive_token.json")
-one_drive_credentials_path = os.path.join(credentials_folder, "TrainingBackupCredentials", "onedrive_credentials.json")
+onedrive_token_path = os.path.join(credentials_folder, "onedrive_token.json")
+one_drive_credentials_path = os.path.join(credentials_folder, "onedrive_credentials.json")
 
 # Global Variables
 with open(one_drive_credentials_path, 'r') as f:
