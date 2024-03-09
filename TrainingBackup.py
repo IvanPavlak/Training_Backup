@@ -29,7 +29,7 @@ onedrive_token_path = os.path.join(credentials_folder, "onedrive_token.json")
 one_drive_credentials_path = os.path.join(credentials_folder, "onedrive_credentials.json")
 
 # Global Variables
-with open(one_drive_credentials_path, 'r') as f:
+with open(one_drive_credentials_path, "r") as f:
     credentials = json.load(f)
 
 onedrive_client_id = credentials.get("client_id")
@@ -172,6 +172,7 @@ def authenticate_google_drive():
         credentials = Credentials.from_authorized_user_file(google_token_path, SCOPES)
 
     if not credentials or not credentials.valid:
+        print("--------------------------------------------------------------------------------")
         if credentials and credentials.expired and credentials.refresh_token:
             credentials.refresh(Request())
         else:
@@ -240,4 +241,4 @@ upload_to_google_drive(authenticate_google_drive())
 print("--------------------------------------------------------------------------------")
 clean_local_folder(training_pdf_path)
 clean_local_folder(pdf_path)
-time.sleep(5)
+time.sleep(1)
