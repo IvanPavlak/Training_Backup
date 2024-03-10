@@ -38,8 +38,7 @@ redirect_uri = "http://localhost:8080/"
 token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 
 # Convert .docx to .pdf
-print("--------------------------------------------------------------------------------")
-print('Converting ".docx" to ".pdf":\n')
+print('Converting ".docx" to ".pdf":')
 convert(docx_path, pdf_path)
 
 # Delete local files
@@ -47,11 +46,9 @@ def clean_local_folder(file_path):
     file = os.path.basename(file_path)
     if os.path.exists(file_path):
         os.remove(file_path)
-        print(f'"{file}" deleted successfully from local folder!')
-        print("--------------------------------------------------------------------------------")
+        print(f'"{file}" deleted successfully from local folder!')  
     else:
-        print(f'"{file}" does not exist in the specified path!')
-        print("--------------------------------------------------------------------------------")
+        print(f'"{file}" does not exist in the specified path!')        
 
 # One Drive Authentication
 def authenticate_onedrive(): 
@@ -82,7 +79,6 @@ def authenticate_onedrive():
     
     print("Click on this link to authenticate with OneDrive:\n")
     print(auth_url + "?" + urllib.parse.urlencode(auth_params))
-    print("--------------------------------------------------------------------------------")
     url = input("Copy the redirected URL here:\n\n")
     code = parse_qs(urlparse(url).query).get('code', [''])[0]   
 
@@ -153,15 +149,12 @@ def upload_to_onedrive(access_token):
         response = requests.put(upload_url, headers=headers, data=file_content)
         file_content.close()
 
-        if response.status_code == 200:
-            print("--------------------------------------------------------------------------------")
+        if response.status_code == 200: 
             print("Uploaded file to OneDrive!")
-        else:
-            print("--------------------------------------------------------------------------------")
+        else: 
             print("Error uploading file to OneDrive:", response.text)
 
     except Exception as e:
-        print("--------------------------------------------------------------------------------")
         print("Error:", str(e))
 
 # Google Drive Authentication
@@ -172,7 +165,6 @@ def authenticate_google_drive():
         credentials = Credentials.from_authorized_user_file(google_token_path, SCOPES)
 
     if not credentials or not credentials.valid:
-        print("--------------------------------------------------------------------------------")
         if credentials and credentials.expired and credentials.refresh_token:
             credentials.refresh(Request())
         else:
@@ -214,7 +206,6 @@ def upload_to_google_drive(credentials):
         if response["files"]:
             file_id = response["files"][0]["id"]
             service.files().delete(fileId=file_id).execute()
-            print("--------------------------------------------------------------------------------")
             print("Deleted existing file from Google Drive!")
 
         file_name = "ThePRogram2024.pdf"
@@ -229,16 +220,13 @@ def upload_to_google_drive(credentials):
                                              fields="id").execute()
         
         media.stream().close()
-        print("--------------------------------------------------------------------------------")
         print("Uploaded file to Google Drive!")
 
     except HttpError as e:
-        print("--------------------------------------------------------------------------------")
         print("Error: " + str(e))
 
 upload_to_onedrive(authenticate_onedrive())
 upload_to_google_drive(authenticate_google_drive())
-print("--------------------------------------------------------------------------------")
 clean_local_folder(training_pdf_path)
 clean_local_folder(pdf_path)
 time.sleep(1)
