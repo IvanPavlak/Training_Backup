@@ -150,7 +150,7 @@ def upload_to_onedrive(access_token):
         file_content.close()
 
         if response.status_code == 200: 
-            print("Uploaded file to OneDrive!")
+            print("=> Uploaded file to OneDrive!")
         else: 
             print("Error uploading file to OneDrive:", response.text)
 
@@ -176,54 +176,61 @@ def authenticate_google_drive():
 
     return credentials
 
-# Google Drive Upload
+"""
+Google Drive Upload
+
+Uploads a PDF file to specified folders in the Google Drive.
+If there already is a file with the same name, it is deleted before the upload. 
+    - this deletion is necessary because two files with the same name can be uploaded to Google Drive, which results in unnecessary clutter.
+  
+  Args:
+    credentials: Google API credentials.
+"""
 def upload_to_google_drive(credentials):
-    try:
-        service = build("drive", "v3", credentials=credentials)
+  folders = ["PRogram1", "PRogram2"]
 
-        response = service.files().list(
-            q="name='PRogram1' and mimeType='application/vnd.google-apps.folder'",
-            spaces="drive"
-        ).execute()
+  try:
+    service = build("drive", "v3", credentials=credentials)
 
-        if not response["files"]:
-            file_metadata = {
-                "name": "PRogram1",
-                "mimeType": "application/vnd.google-apps.folder"
-            }
+    for folder_name in folders:
+      response = service.files().list(
+          q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'",
+          spaces="drive"
+      ).execute()
 
-            file = service.files().create(body=file_metadata, fields="id").execute()
-
-            folder_id = file.get("id")
-        else:
-            folder_id = response["files"][0]["id"]
-
-        response = service.files().list(
-            q="name='ThePRogram2024.pdf' and '" + folder_id + "' in parents",
-            spaces="drive"
-        ).execute()
-
-        if response["files"]:
-            file_id = response["files"][0]["id"]
-            service.files().delete(fileId=file_id).execute()
-            print("Deleted existing file from Google Drive!")
-
-        file_name = "ThePRogram2024.pdf"
+      if not response["files"]:
         file_metadata = {
-            "name": file_name,
-            "parents": [folder_id]
+            "name": folder_name,
+            "mimeType": "application/vnd.google-apps.folder"
         }
+        file = service.files().create(body=file_metadata, fields="id").execute()
+        folder_id = file.get("id")
+      else:
+        folder_id = response["files"][0]["id"]
 
-        media = MediaFileUpload(pdf_path)
-        upload_file = service.files().create(body=file_metadata,
-                                             media_body=media,
-                                             fields="id").execute()
-        
-        media.stream().close()
-        print("Uploaded file to Google Drive!")
+      response = service.files().list(
+          q=f"name='ThePRogram2024.pdf' and parents='{folder_id}'",
+          spaces="drive"
+      ).execute()
+      for existing_file in response.get("files", []):
+        existing_file_id = existing_file["id"]
+        service.files().delete(fileId=existing_file_id).execute()
+        print(f'Deleted existing file "{existing_file["name"]}" from folder "{folder_name}"')
 
-    except HttpError as e:
-        print("Error: " + str(e))
+      file_name = "ThePRogram2024.pdf"
+      file_metadata = {
+          "name": file_name,
+          "parents": [folder_id]
+      }
+      media = MediaFileUpload(pdf_path)
+      upload_file = service.files().create(body=file_metadata,
+                                            media_body=media,
+                                            fields="id").execute()
+      media.stream().close()
+      print(f"=> Uploaded file to Google Drive folder: {folder_name}")
+
+  except HttpError as e:
+    print("Error: " + str(e))
 
 upload_to_onedrive(authenticate_onedrive())
 upload_to_google_drive(authenticate_google_drive())
