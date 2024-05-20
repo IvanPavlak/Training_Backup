@@ -1,4 +1,8 @@
 # Training Backup
+
+Overview
+This script automates the process of converting a .docx file to .pdf, uploading the resulting PDF to OneDrive and Google Drive, and then cleaning up local files. It is designed to be used with Task Scheduler for automated backups.
+
 # Requirements
 
 ## One Drive
@@ -10,15 +14,15 @@
 	- Both must be copied into a `onedrive_credentials.json`:
 ```
 {
-    "client_id": "client_id",
-    "client_secret": "secret_value"
+    "client_id": "your_client_id",
+    "client_secret": "your_secret_value"
 }
 ```
 
 ## Google Drive
 
 - [Google Cloud](https://cloud.google.com/gcp?utm_source=google&utm_medium=cpc&utm_campaign=emea-emea-all-en-bkws-all-all-trial-e-gcp-1707574&utm_content=text-ad-none-any-DEV_c-CRE_683761846512-ADGP_Hybrid+%7C+BKWS+-+EXA+%7C+Txt+-+GCP+-+General+-+v2-KWID_43700078882258013-kwd-6458750523-userloc_1007612&utm_term=KW_google%20cloud-NET_g-PLAC_&&gad_source=1&gclid=CjwKCAiAivGuBhBEEiwAWiFmYSEVAU4nVtvqTjYCKbWC08C1ap_UukXjFhKNnvw9t3uknDf6DtumLBoCJTwQAvD_BwE&gclsrc=aw.ds)
-	- Console -> APIs & Services -> OAuth consent screen -> Create a Project -> User Type: External -> Add yourself as Test User -> Credentials -> Create Credentials: OAuth client ID -> Desktop app -> save the `json` file to `google_credentials.json`
+	- Console -> APIs & Services -> OAuth consent screen -> Create a Project -> User Type: External -> Add yourself as Test User -> Credentials -> Create Credentials: OAuth client ID -> Desktop app -> Save the `json` file to `google_credentials.json`
  
 ## Training Backup Credentials Folder
 
@@ -38,7 +42,7 @@ ___
 # Usage
 
 1. Clone or download this repository to the local machine.
-2. Copy the `TrainingBackupCredentials` folder in it.
+2. Copy the `TrainingBackupCredentials` folder into the repository.
 3. Create a conda environment with the necessary dependencies.
 4. Modify the paths in the `TrainingBackup.bat` file to call the right `activate.bat` and `miniconda3` (or Anaconda) on your machine.
 5. Modify the path of the python call in the `TrainingBackup.bat` to the `TrainingBackup.py` in cloned/downloaded repository.
@@ -51,13 +55,17 @@ ___
 	- `One Drive Upload` - modify to accommodate your needs.
 		- Currently uploads the last page of the `pdf_path` to the root folder in OneDrive.
 	- `Google Drive Upload` - modify to accommodate your needs.
-		- Currently uploads the `pdf_path` to a drive named `PRogram1`.
+		- Currently uploads the `pdf_path` to specified folders saved in the `folders` variable.
 			- If the file already exists, it deletes it.
 			- This prevents piling of duplicates in the drive.
-1. `Task Scheduler`
+7. `Task Scheduler Setup`
 	- This script is intended for use with the Task Scheduler.
-	- Example usage is:
-		- Open `Task Scheduler` -> `Create Task` -> Check `Run with highest privileges` -> Configure for `Windows 10` -> Set trigger as preferred -> Set Action to `Start a program` with the path to the `.bat` file (`C:\folder\subfolder\TrainingBackup.bat`) -> Set Conditions and Settings as preferred.
+	- Open `Task Scheduler`.
+		- Create a new task with the following settings:
+		- General: Check "Run with highest privileges" and configure for your version of Windows.
+		- Triggers: Set your preferred schedule.
+		- Actions: Start a program and point to the .bat file created above.
+		- Conditions and Settings: Adjust as needed.
 ___
 # Functions
 
@@ -66,10 +74,10 @@ ___
 	- **Parameters**:
 		- `file_path`: The path of the file to be deleted.
 2. **`authenticate_onedrive()`**:
-	- **Purpose**: This function handles the authentication process for accessing OneDrive.
-	- **Returns**: An access token for OneDrive authentication.
+	- **Purpose**: This function handles the authentication process for accessing OneDrive using the OAuth2.
+	- **Returns**: An access token for OneDrive.
 3. **`exchange_code_for_tokens(code)`**:
-	- **Purpose**: This function exchanges an authorization code for access and refresh tokens during the OneDrive authentication process.
+	- **Purpose**: This function exchanges an authorization code for access and refresh tokens.
 	- **Parameters**:
 		- `code`: The authorization code obtained during the authentication process.
 	- **Returns**: Access token, expiration time, and refresh token.
@@ -83,7 +91,7 @@ ___
 	- **Parameters**:
 		- `access_token`: Access token required for authentication with OneDrive.
 6. **`authenticate_google_drive()`**:
-	- **Purpose**: This function handles the authentication process for accessing Google Drive.
+	- **Purpose**: This function handles the authentication process for accessing Google Drive using the OAuth2.
 	- **Returns**: Google Drive credentials for authentication.
 7. **`upload_to_google_drive(credentials)`**:
 	- **Purpose**: This function uploads a PDF file to Google Drive.
@@ -93,30 +101,30 @@ ___
 # Error Handling
 
 - **Authentication Errors**:
-	- If authentication with OneDrive or Google Drive fails due to invalid credentials, expired tokens, or network issues, the script will catch these errors and prompt the user to reauthenticate. It will provide instructions on how to obtain new credentials or resolve authentication issues.
+	- Prompts reauthentication if credentials are invalid or expired.
 
 - **Upload Errors**:
-	- If there are errors during the upload process to OneDrive or Google Drive, such as network interruptions or permission errors, the script will attempt to retry the upload process a few times before notifying the user of the failure and providing guidance on resolving the issue.
+	- Retries upload on failure and notifies the user if unsuccessful.
 
 - **File Path Errors**:
-	- If the specified file paths are incorrect or if the files are not found at the specified locations, the script will catch these errors and inform the user. It will provide guidance on verifying file paths and ensuring that the necessary files exist before proceeding with conversion and upload operations.
+	- Informs the user of incorrect file paths and provides guidance on verification.
 ___
 # Security Considerations:
 
 - **Credential Management**:
-	- The script securely manages credentials for accessing OneDrive and Google Drive by storing them in separate JSON files (`onedrive_credentials.json` and `google_credentials.json`). These files should be stored in a secure location and access restricted to authorized users only.
+	- Credentials are stored securely in JSON files and access is restricted.
 
 - **Token Handling**:
-	- Tokens obtained during authentication, such as access tokens and refresh tokens, are handled securely within the script. The script ensures that tokens are not exposed in log files or error messages and implements token rotation and expiration strategies to minimize the risk of unauthorized access.
+	- Secure handling of tokens with proper rotation and expiration strategies.
 
 - **HTTPS Usage**:
-	- All communications with external services, such as OneDrive and Google Drive APIs, are performed over HTTPS to encrypt data in transit and prevent eavesdropping or tampering by malicious actors.
+	- All communications are encrypted via HTTPS
 
 - **Input Sanitization**:
-	- User inputs, such as file paths and authentication codes, are validated and sanitized to prevent injection attacks or path traversal vulnerabilities. The script ensures that user-supplied data is properly sanitized before processing to mitigate security risks.
+	- Validates and sanitizes user inputs to prevent security risks.
 
 - **Error Logging**:
-	- The script implements error logging to record any unexpected errors or exceptions that occur during execution. Log files are stored securely, and regular reviews are conducted to identify potential security issues or anomalies.
+	- Logs errors securely for regular reviews and potential issue identification.
 ___
 # Helpful Sources
 
