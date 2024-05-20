@@ -40,6 +40,7 @@ token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 # Convert .docx to .pdf
 print('Converting ".docx" to ".pdf":')
 convert(docx_path, pdf_path)
+print()
 
 # Delete local files
 def clean_local_folder(file_path):
@@ -77,7 +78,7 @@ def authenticate_onedrive():
         "response_type": "code"
     }
     
-    print("Click on this link to authenticate with OneDrive:\n")
+    print("\nClick on this link to authenticate with OneDrive:\n")
     print(auth_url + "?" + urllib.parse.urlencode(auth_params))
     url = input("Copy the redirected URL here:\n\n")
     code = parse_qs(urlparse(url).query).get('code', [''])[0]   
@@ -150,12 +151,12 @@ def upload_to_onedrive(access_token):
         file_content.close()
 
         if response.status_code == 200: 
-            print("=> Uploaded file to OneDrive!")
+            print("=> Uploaded file to OneDrive!\n")
         else: 
-            print("Error uploading file to OneDrive:", response.text)
+            print(f"Error uploading file to OneDrive:\n\n {response.text}\n")
 
     except Exception as e:
-        print("Error:", str(e))
+        print(f"Error:\n\n {str(e)}")
 
 # Google Drive Authentication
 def authenticate_google_drive():
@@ -187,7 +188,7 @@ If there already is a file with the same name, it is deleted before the upload.
     credentials: Google API credentials.
 """
 def upload_to_google_drive(credentials):
-  folders = ["PRogram1", "PRogram2"]
+  folders = ["PRogram1", "PRogram2", "10xEngineers"]
 
   try:
     service = build("drive", "v3", credentials=credentials)
@@ -227,13 +228,15 @@ def upload_to_google_drive(credentials):
                                             media_body=media,
                                             fields="id").execute()
       media.stream().close()
-      print(f"=> Uploaded file to Google Drive folder: {folder_name}")
+      print(f'=> Uploaded file to Google Drive folder "{folder_name}"\n')
 
   except HttpError as e:
-    print("Error: " + str(e))
+    print(f"Error:\n\n {str(e)}")
 
 upload_to_onedrive(authenticate_onedrive())
 upload_to_google_drive(authenticate_google_drive())
 clean_local_folder(training_pdf_path)
 clean_local_folder(pdf_path)
+print()
+
 time.sleep(1)
