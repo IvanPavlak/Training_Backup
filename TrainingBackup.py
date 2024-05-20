@@ -4,7 +4,7 @@ import time
 import json
 import urllib
 import requests
-from docx2pdf import convert 
+from docx2pdf import convert
 from pypdf import PdfWriter, PdfReader
 from urllib.parse import urlparse, parse_qs
 from googleapiclient.discovery import build
@@ -44,6 +44,12 @@ print()
 
 # Delete local files
 def clean_local_folder(file_path):
+    """
+    Deletes a file from the local folder if it exists.
+    
+    Args:
+        file_path (str): Path of the file to be deleted.
+    """
     file = os.path.basename(file_path)
     if os.path.exists(file_path):
         os.remove(file_path)
@@ -53,6 +59,13 @@ def clean_local_folder(file_path):
 
 # One Drive Authentication
 def authenticate_onedrive(): 
+    """
+    Authenticates with OneDrive using OAuth2.
+    If tokens are expired or missing, it initiates the authentication process.
+
+    Returns:
+        str: Access token for OneDrive API.
+    """
     scope = "files.readwrite offline_access"
 
     if os.path.exists(onedrive_token_path):
@@ -96,6 +109,15 @@ def authenticate_onedrive():
     return access_token
 
 def exchange_code_for_tokens(code):
+    """
+    Exchanges the authorization code for access and refresh tokens.
+
+    Args:
+        code (str): Authorization code received from the OAuth2 flow.
+
+    Returns:
+        tuple: Access token, expiry time, and refresh token.
+    """
     token_params = {
         "client_id": onedrive_client_id,
         "client_secret": onedrive_client_secret,
@@ -115,6 +137,15 @@ def exchange_code_for_tokens(code):
     return access_token, expires_at, refresh_token
 
 def refresh_access_token(refresh_token): 
+    """
+    Refreshes the access token using the refresh token.
+
+    Args:
+        refresh_token (str): Refresh token for obtaining a new access token.
+
+    Returns:
+        tuple: New access token, expiry time, and refresh token.
+    """
     token_params = {
         "client_id": onedrive_client_id,
         "client_secret": onedrive_client_secret,
@@ -134,6 +165,12 @@ def refresh_access_token(refresh_token):
 
 # One Drive Upload
 def upload_to_onedrive(access_token):
+    """
+    Uploads a PDF file to OneDrive.
+
+    Args:
+        access_token (str): Access token for OneDrive API.
+    """
     try:
         reader = PdfReader(pdf_path)
         last_page = reader.pages[-1]
@@ -160,6 +197,12 @@ def upload_to_onedrive(access_token):
 
 # Google Drive Authentication
 def authenticate_google_drive():
+    """
+    Authenticates with Google Drive using OAuth2.
+
+    Returns:
+        google.oauth2.credentials.Credentials: Google API credentials.
+    """
     SCOPES = ["https://www.googleapis.com/auth/drive"]
     credentials = None
     if os.path.exists(google_token_path):
@@ -177,61 +220,60 @@ def authenticate_google_drive():
 
     return credentials
 
-"""
-Google Drive Upload
-
-Uploads a PDF file to specified folders in the Google Drive.
-If there already is a file with the same name, it is deleted before the upload. 
-    - this deletion is necessary because two files with the same name can be uploaded to Google Drive, which results in unnecessary clutter.
-  
-  Args:
-    credentials: Google API credentials.
-"""
+# Google Drive Upload
 def upload_to_google_drive(credentials):
-  folders = ["PRogram1", "PRogram2", "10xEngineers"]
+    """
+    Uploads a PDF file to specified folders in the Google Drive.
+    If there already is a file with the same name, it is deleted before the upload.
+    - this deletion is necessary because two files with the same name can be uploaded to Google Drive, which results in unnecessary clutter.
 
-  try:
-    service = build("drive", "v3", credentials=credentials)
+    Args:
+        credentials: Google API credentials.
+    """
+    folders = ["PRogram1", "PRogram2", "10xEngineers"]
 
-    for folder_name in folders:
-      response = service.files().list(
-          q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'",
-          spaces="drive"
-      ).execute()
+    try:
+        service = build("drive", "v3", credentials=credentials)
 
-      if not response["files"]:
-        file_metadata = {
-            "name": folder_name,
-            "mimeType": "application/vnd.google-apps.folder"
-        }
-        file = service.files().create(body=file_metadata, fields="id").execute()
-        folder_id = file.get("id")
-      else:
-        folder_id = response["files"][0]["id"]
+        for folder_name in folders:
+            response = service.files().list(
+                q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'",
+                spaces="drive"
+            ).execute()
 
-      response = service.files().list(
-          q=f"name='ThePRogram2024.pdf' and parents='{folder_id}'",
-          spaces="drive"
-      ).execute()
-      for existing_file in response.get("files", []):
-        existing_file_id = existing_file["id"]
-        service.files().delete(fileId=existing_file_id).execute()
-        print(f'Deleted existing file "{existing_file["name"]}" from folder "{folder_name}"')
+            if not response["files"]:
+                file_metadata = {
+                    "name": folder_name,
+                    "mimeType": "application/vnd.google-apps.folder"
+                }
+                file = service.files().create(body=file_metadata, fields="id").execute()
+                folder_id = file.get("id")
+            else:
+                folder_id = response["files"][0]["id"]
 
-      file_name = "ThePRogram2024.pdf"
-      file_metadata = {
-          "name": file_name,
-          "parents": [folder_id]
-      }
-      media = MediaFileUpload(pdf_path)
-      upload_file = service.files().create(body=file_metadata,
-                                            media_body=media,
-                                            fields="id").execute()
-      media.stream().close()
-      print(f'=> Uploaded file to Google Drive folder "{folder_name}"\n')
+            response = service.files().list(
+                q=f"name='ThePRogram2024.pdf' and parents='{folder_id}'",
+                spaces="drive"
+            ).execute()
+            for existing_file in response.get("files", []):
+                existing_file_id = existing_file["id"]
+                service.files().delete(fileId=existing_file_id).execute()
+                print(f'Deleted existing file "{existing_file["name"]}" from folder "{folder_name}"')
 
-  except HttpError as e:
-    print(f"Error:\n\n {str(e)}")
+            file_name = "ThePRogram2024.pdf"
+            file_metadata = {
+                "name": file_name,
+                "parents": [folder_id]
+            }
+            media = MediaFileUpload(pdf_path)
+            upload_file = service.files().create(body=file_metadata,
+                                                 media_body=media,
+                                                 fields="id").execute()
+            media.stream().close()
+            print(f'=> Uploaded file to Google Drive folder "{folder_name}"\n')
+
+    except HttpError as e:
+        print(f"Error:\n\n {str(e)}")
 
 upload_to_onedrive(authenticate_onedrive())
 upload_to_google_drive(authenticate_google_drive())
