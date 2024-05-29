@@ -194,9 +194,12 @@ def upload_to_onedrive(access_token):
             file_content.close()
 
             if response.status_code == 200: 
-                print(f"=> Uploaded '{file_name}' to OneDrive!\n")
+                print(f'=> Uploaded "{file_name}" to OneDrive!\n')
             else: 
-                print(f"Error uploading '{file_name}' to OneDrive:\n\n {response.text}\n")
+                print(f'Error uploading "{file_name}" to OneDrive:\n\n {response.text}\n')
+
+    except Exception as e:
+        print(f"Error:\n\n {str(e)}")
 
     except Exception as e:
         print(f"Error:\n\n {str(e)}")
