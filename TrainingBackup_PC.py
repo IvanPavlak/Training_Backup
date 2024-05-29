@@ -166,7 +166,7 @@ def refresh_access_token(refresh_token):
 # One Drive Upload
 def upload_to_onedrive(access_token):
     """
-    Uploads a PDF file to OneDrive.
+    Uploads the PDF and DOCX files to OneDrive.
 
     Args:
         access_token (str): Access token for OneDrive API.
@@ -181,16 +181,22 @@ def upload_to_onedrive(access_token):
         with open(training_pdf_path, "wb") as output_pdf:
             writer.write(output_pdf)
 
-        upload_url = "https://graph.microsoft.com/v1.0/me/drive/root:/Training.pdf:/content"
-        headers = {"Authorization": "Bearer " + access_token}
-        file_content = open(training_pdf_path, "rb")
-        response = requests.put(upload_url, headers=headers, data=file_content)
-        file_content.close()
+        files_to_upload = {
+            "Training.pdf": training_pdf_path,
+            "ThePRogram2024.docx": docx_path
+        }
 
-        if response.status_code == 200: 
-            print("=> Uploaded file to OneDrive!\n")
-        else: 
-            print(f"Error uploading file to OneDrive:\n\n {response.text}\n")
+        for file_name, file_path in files_to_upload.items():
+            upload_url = f"https://graph.microsoft.com/v1.0/me/drive/root:/{file_name}:/content"
+            headers = {"Authorization": "Bearer " + access_token}
+            file_content = open(file_path, "rb")
+            response = requests.put(upload_url, headers=headers, data=file_content)
+            file_content.close()
+
+            if response.status_code == 200: 
+                print(f"=> Uploaded '{file_name}' to OneDrive!\n")
+            else: 
+                print(f"Error uploading '{file_name}' to OneDrive:\n\n {response.text}\n")
 
     except Exception as e:
         print(f"Error:\n\n {str(e)}")
