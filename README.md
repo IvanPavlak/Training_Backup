@@ -1,8 +1,29 @@
 # Training Backup
 
-Overview
-This script automates the process of converting a .docx file to .pdf, uploading the resulting PDF to OneDrive and Google Drive, and then cleaning up local files. It is designed to be used with Task Scheduler for automated backups.
+## Overview
 
+This script automates converting a .docx file to .pdf, uploading both the resulting PDF and the original .docx to OneDrive, and distributing the PDF to multiple Google Drives. It also handles local file clean-up, all in a single PowerShell command.
+____
+# Usage
+
+1. Setup One Drive and Google Drive (see Requirements).
+2. Clone or download this repository to the local machine.
+3. Copy the `TrainingBackupCredentials` folder into the repository.
+4. Create a conda environment with the necessary dependencies (see Requirements).
+5. Modify the paths in the `TrainingBackup.bat` file to call the right `activate.bat` and `miniconda3` (or Anaconda) on your machine.
+6. Modify the paths of the python call in the `TrainingBackup.bat` to the `TrainingBackup.py` in cloned/downloaded repository (supports multiple machines).
+7. Create a `configuration.json` with paths to the training and credentials folders.
+8. Modify in `TrainingBackup.py`:
+	- `docx_path` - modify to accommodate your naming.
+	- `pdf_path` - modify to accommodate your naming.
+	- `Convert .docx to .pdf` - modify to accommodate your naming.
+	- `One Drive Upload` - modify to accommodate your needs.
+		- Currently uploads the whole .docx file and the last page of the .pdf to the root folder in OneDrive.
+	- `Google Drive Upload` - modify to accommodate your needs.
+		- Currently uploads the .pdf to specified folders saved in the `folders` variable.
+			- If the file already exists, it deletes it.
+				- This prevents piling of duplicates in the drive.
+___
 # Requirements
 
 ## One Drive
@@ -39,64 +60,41 @@ This script automates the process of converting a .docx file to .pdf, uploading 
 - Dependencies:
 	- `pip install requests docx2pdf pypdf google-auth google-auth-oauthlib google-api-python-client`
 ___
-# Usage
-
-1. Clone or download this repository to the local machine.
-2. Copy the `TrainingBackupCredentials` folder into the repository.
-3. Create a conda environment with the necessary dependencies.
-4. Modify the paths in the `TrainingBackup.bat` file to call the right `activate.bat` and `miniconda3` (or Anaconda) on your machine.
-5. Modify the path of the python call in the `TrainingBackup.bat` to the `TrainingBackup.py` in cloned/downloaded repository.
-6. Modify in `TrainingBackup.py`:
-	- `training_folder` - provide a full path to the folder.
-	- `credentials_folder` - provide a full path to the folder.
-	- `docx_path` - modify to accommodate your naming.
-	- `pdf_path` - modify to accommodate your naming.
-	- `Convert .docx to .pdf` - modify to accommodate your naming.
-	- `One Drive Upload` - modify to accommodate your needs.
-		- Currently uploads the last page of the `pdf_path` to the root folder in OneDrive.
-	- `Google Drive Upload` - modify to accommodate your needs.
-		- Currently uploads the `pdf_path` to specified folders saved in the `folders` variable.
-			- If the file already exists, it deletes it.
-			- This prevents piling of duplicates in the drive.
-7. `Task Scheduler Setup`
-	- This script is intended for use with the Task Scheduler.
-	- Open `Task Scheduler`.
-		- Create a new task with the following settings:
-		- General: Check "Run with highest privileges" and configure for your version of Windows.
-		- Triggers: Set your preferred schedule.
-		- Actions: Start a program and point to the .bat file created above.
-		- Conditions and Settings: Adjust as needed.
-___
 # Functions
 
 1. **`clean_local_folder(file_path)`**:
-	- **Purpose**: This function deletes a file from the local folder.
-	- **Parameters**:
-		- `file_path`: The path of the file to be deleted.
+	- **Purpose**: Deletes a file from the local folder if it exists.
+	- Arguments:
+		- `file_path (str)`: Path of the file to be deleted.
 2. **`authenticate_onedrive()`**:
-	- **Purpose**: This function handles the authentication process for accessing OneDrive using the OAuth2.
-	- **Returns**: An access token for OneDrive.
-3. **`exchange_code_for_tokens(code)`**:
-	- **Purpose**: This function exchanges an authorization code for access and refresh tokens.
+	- **Purpose**: Authenticates with OneDrive using OAuth2. If tokens are expired or missing, it initiates the authentication process.
+	- **Returns**:
+		- str: Access token for OneDrive API.
+1. **`exchange_code_for_tokens(code)`**:
+	- **Purpose**: Exchanges the authorization code for access and refresh tokens.
+	- Arguments:
+		- code (str): Authorization code received from the OAuth2 flow.	
+	- **Returns**:
+		- tuple: Access token, expiry time, and refresh token.
+1. **`refresh_access_token(refresh_token)`**:
+	- **Purpose**: Refreshes the access token using the refresh token.
+	- **Arguments**:
+		- `refresh_token (str)`: Refresh token for obtaining a new access token.
+	- **Returns**:
+		- tuple: New access token, expiry time, and refresh token.
+1. **`upload_to_onedrive(access_token)`**:
+	- **Purpose**: Uploads the PDF and DOCX files to OneDrive.
+	- **Arguments**:
+		- 	`access_token (str)`: Access token for OneDrive API.
+1. **`authenticate_google_drive()`**:
+	- **Purpose**: Authenticates with Google Drive using OAuth2.
+	- **Returns**: 
+		- google.oauth2.credentials.Credentials: Google API credentials.
+1. **`upload_to_google_drive(credentials)`**:
+	- **Purpose**: Uploads a PDF file to specified folders in the Google Drive. If there already is a file with the same name, it is deleted before the upload.
+		- this deletion is necessary because two files with the same name can be uploaded to Google Drive, which results in unnecessary clutter.
 	- **Parameters**:
-		- `code`: The authorization code obtained during the authentication process.
-	- **Returns**: Access token, expiration time, and refresh token.
-4. **`refresh_access_token(refresh_token)`**:
-	- **Purpose**: This function refreshes the access token for OneDrive authentication using the refresh token.
-	- **Parameters**:
-		- `refresh_token`: The refresh token used to obtain a new access token.
-	- **Returns**: New access token, expiration time, and possibly a new refresh token.
-5. **`upload_to_onedrive(access_token)`**:
-	- **Purpose**: This function uploads a PDF file to OneDrive.
-	- **Parameters**:
-		- `access_token`: Access token required for authentication with OneDrive.
-6. **`authenticate_google_drive()`**:
-	- **Purpose**: This function handles the authentication process for accessing Google Drive using the OAuth2.
-	- **Returns**: Google Drive credentials for authentication.
-7. **`upload_to_google_drive(credentials)`**:
-	- **Purpose**: This function uploads a PDF file to Google Drive.
-	- **Parameters**:
-		- `credentials`: Google Drive credentials obtained during authentication.
+		- credentials: Google API credentials.
 ___
 # Error Handling
 
