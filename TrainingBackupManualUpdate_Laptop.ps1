@@ -1,14 +1,14 @@
-# Manual Training Backup
-function training-backup {
+# Training Backup Manual Update
+function Training-Backup {
     # Store the current directory
     $currentDirectory = Get-Location
     # Set the directory path
-    $backupDirectory = "E:\VSCode\GitHub\Training_Backup"
+    $backupDirectory = "C:\Users\Ivan\VSCode\GitHub\Training_Backup"
     # Change to the backup directory
     Set-Location -Path $backupDirectory
     try {
         # Execute the training-backup.bat file
-        & ".\TrainingBackup.bat"
+        & ".\TrainingBackup_Laptop.bat"
         # Output success message in green
         Write-Host "=> Training Backup Completed!" -ForegroundColor Green
     }
