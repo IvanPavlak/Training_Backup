@@ -23,6 +23,8 @@ ____
 		- Currently uploads the .pdf to specified folders saved in the `folders` variable.
 			- If the file already exists, it deletes it.
 				- This prevents piling of duplicates in the drive.
+9. Copy `TrainingBackupManualUpdate.ps1`'s contents into the `Microsoft.PowerShell_profile.ps1` and modify the `$backupDirectory` variable.
+10. In PowerShell, type `Training-Backup` (PowerShell is case insensitive!).
 ___
 # Requirements
 
