@@ -178,7 +178,7 @@ def refresh_access_token(refresh_token):
 # One Drive Upload
 def upload_to_onedrive(access_token):
     """
-    Uploads the PDF and DOCX files to OneDrive.
+    Uploads the PDF and DOCX files to a specified folder in OneDrive.
 
     Args:
         access_token (str): Access token for OneDrive API.
@@ -199,7 +199,7 @@ def upload_to_onedrive(access_token):
         }
 
         for file_name, file_path in files_to_upload.items():
-            upload_url = f"https://graph.microsoft.com/v1.0/me/drive/root:/{file_name}:/content"
+            upload_url = f"https://graph.microsoft.com/v1.0/me/drive/root:/Training/{file_name}:/content"
             headers = {"Authorization": "Bearer " + access_token}
             file_content = open(file_path, "rb")
             response = requests.put(upload_url, headers=headers, data=file_content)
