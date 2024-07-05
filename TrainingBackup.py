@@ -50,7 +50,7 @@ redirect_uri = "http://localhost:8080/"
 token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 
 # Convert .docx to .pdf
-print('Converting ".docx" to ".pdf":')
+print('\nConverting ".docx" to ".pdf":')
 convert(docx_path, pdf_path)
 print()
 
