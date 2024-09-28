@@ -1,9 +1,9 @@
 {
-    "Laptop-Win10": {
+    "Laptop-Win11": {
         "training_folder": "C:\\Users\\Ivan\\Training",
         "credentials_folder": "C:\\Users\\Ivan\\VSCode\\GitHub\\Training_Backup\\TrainingBackupCredentials"
     },
-    "PC-Win10": {
+    "PC-Win11": {
         "training_folder": "E:\\Accountability\\Training\\2024",
         "credentials_folder": "E:\\VSCode\\GitHub\\Training_Backup\\TrainingBackupCredentials"
     }

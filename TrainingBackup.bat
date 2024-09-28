@@ -1,7 +1,7 @@
 @echo off
 
 :: Check hostname to determine which Python script to run
-if "%COMPUTERNAME%" == "PC-WIN10" ( 
+if "%COMPUTERNAME%" == "PC-WIN11" ( 
     set "python_script=E:\VSCode\GitHub\Training_Backup\TrainingBackup.py"
 ) else (
     set "python_script=C:\Users\Ivan\VSCode\GitHub\Training_Backup\TrainingBackup.py"
