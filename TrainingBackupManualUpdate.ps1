@@ -1,32 +1,25 @@
-# Training Backup Manual Update
+# Training-Backup Function
 function Training-Backup {
-    # Store the current directory
-    $currentDirectory = Get-Location
-    # Set default backup directory
-    $backupDirectory = "E:\VSCode\GitHub\Training_Backup"
+	$currentDirectory = Get-Location
+	$backupDirectory = "E:\VSCode\GitHub\Training_Backup"
     
-    # Check hostname and set backup directory accordingly
-    $hostname = (Get-CimInstance Win32_ComputerSystem).Name
-    if ($hostname -eq "Laptop-Win10") {
-        $backupDirectory = "C:\Users\Ivan\VSCode\GitHub\Training_Backup"
-    }
+	$hostname = (Get-CimInstance Win32_ComputerSystem).Name
+	if ($hostname -eq "Laptop-Win11") {
+		$backupDirectory = "C:\Users\Ivan\VSCode\GitHub\Training_Backup"
+	}
     
-    # Change to the backup directory
-    Set-Location -Path $backupDirectory
+	Set-Location -Path $backupDirectory
     
-    try {
-        # Execute the training-backup.bat file
-        & ".\TrainingBackup.bat"
-        # Output success message in green
-        Write-Host "=> Training Backup Completed!" -ForegroundColor Green
-    }
-    catch {
-        # Output error message in red
-        Write-Host "=> Error during Training Backup!" -ForegroundColor Red
-        Write-Host $_.Exception.Message -ForegroundColor Red
-    }
-    finally {
-        # Return to the default directory
-        Set-Location -Path $currentDirectory
-    }
+	try {
+		& ".\TrainingBackup.bat"
+		# Output success message in green
+		Write-Host "`n=> Training Backup Completed!`n" -ForegroundColor Green
+	}
+	catch {
+		Write-Host "`n=> Error during Training Backup!`n" -ForegroundColor Red
+		Write-Host $_.Exception.Message -ForegroundColor Red
+	}
+	finally {
+		Set-Location -Path $currentDirectory
+	}
 }
