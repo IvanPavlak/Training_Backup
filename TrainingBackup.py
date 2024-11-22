@@ -6,6 +6,7 @@ import urllib
 import socket
 import requests
 from docx2pdf import convert
+from datetime import datetime
 from pypdf import PdfWriter, PdfReader
 from urllib.parse import urlparse, parse_qs
 from googleapiclient.discovery import build
@@ -223,18 +224,47 @@ def authenticate_google_drive():
     """
     SCOPES = ["https://www.googleapis.com/auth/drive"]
     credentials = None
+
     if os.path.exists(google_token_path):
-        credentials = Credentials.from_authorized_user_file(google_token_path, SCOPES)
+        try:
+            credentials = Credentials.from_authorized_user_file(google_token_path, SCOPES)
+        except Exception as e:
+            print(f"Error loading credentials: {e}")
+            credentials = None
 
     if not credentials or not credentials.valid:
-        if credentials and credentials.expired and credentials.refresh_token:
-            credentials.refresh(Request())
-        else:
+        try:
+            if credentials and credentials.expired and credentials.refresh_token:
+                response = requests.post(
+                    "https://oauth2.googleapis.com/token",
+                    data={
+                        "client_id": credentials.client_id,
+                        "client_secret": credentials.client_secret,
+                        "refresh_token": credentials.refresh_token,
+                        "grant_type": "refresh_token"
+                    }
+                )
+                response.raise_for_status()
+                refresh_data = response.json()
+                
+                credentials.token = refresh_data.get("access_token")
+                credentials.expiry = datetime.fromtimestamp(
+                    time.time() + refresh_data.get("expires_in", 3600)
+                )
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(google_credentials_path, SCOPES)
+                credentials = flow.run_local_server(port=0)
+
+            with open(google_token_path, "w") as token:
+                token.write(credentials.to_json())
+
+        except Exception as e:
+            print(f"Authentication error: {e}")
             flow = InstalledAppFlow.from_client_secrets_file(google_credentials_path, SCOPES)
             credentials = flow.run_local_server(port=0)
 
-        with open(google_token_path, "w") as token:
-            token.write(credentials.to_json())
+            with open(google_token_path, "w") as token:
+                token.write(credentials.to_json())
 
     return credentials
 
