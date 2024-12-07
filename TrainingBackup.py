@@ -328,5 +328,3 @@ upload_to_google_drive(authenticate_google_drive())
 clean_local_folder(training_pdf_path)
 clean_local_folder(pdf_path)
 print()
-
-time.sleep(1)
