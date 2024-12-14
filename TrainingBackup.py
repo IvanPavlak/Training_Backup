@@ -278,7 +278,7 @@ def upload_to_google_drive(credentials):
     Args:
         credentials: Google API credentials.
     """
-    folders = ["PRogram1", "PRogram2", "10xEngineers"]
+    folders = ["PRogram1"]
 
     try:
         service = build("drive", "v3", credentials=credentials)
