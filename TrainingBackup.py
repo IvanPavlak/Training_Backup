@@ -31,8 +31,8 @@ if hostname in config:
 else:
     print("Hostname not found in configuration file!")
 
-docx_path = os.path.join(training_folder, "ThePRogram2024.docx")
-pdf_path = os.path.join(training_folder, "ThePRogram2024.pdf")
+docx_path = os.path.join(training_folder, "ThePRogram2025.docx")
+pdf_path = os.path.join(training_folder, "ThePRogram2025.pdf")
 training_pdf_path = os.path.join(training_folder, "Training.pdf")
 
 google_token_path = os.path.join(credentials_folder, "google_token.json")
@@ -196,7 +196,7 @@ def upload_to_onedrive(access_token):
 
         files_to_upload = {
             "Training.pdf": training_pdf_path,
-            "ThePRogram2024.docx": docx_path
+            "ThePRogram2025.docx": docx_path
         }
 
         for file_name, file_path in files_to_upload.items():
@@ -278,7 +278,7 @@ def upload_to_google_drive(credentials):
     Args:
         credentials: Google API credentials.
     """
-    folders = ["PRogram1"]
+    folders = ["PRogram"]
 
     try:
         service = build("drive", "v3", credentials=credentials)
@@ -300,7 +300,7 @@ def upload_to_google_drive(credentials):
                 folder_id = response["files"][0]["id"]
 
             response = service.files().list(
-                q=f"name='ThePRogram2024.pdf' and parents='{folder_id}'",
+                q=f"name='ThePRogram2025.pdf' and parents='{folder_id}'",
                 spaces="drive"
             ).execute()
             for existing_file in response.get("files", []):
@@ -308,7 +308,7 @@ def upload_to_google_drive(credentials):
                 service.files().delete(fileId=existing_file_id).execute()
                 print(f'Deleted existing file "{existing_file["name"]}" from folder "{folder_name}"')
 
-            file_name = "ThePRogram2024.pdf"
+            file_name = "ThePRogram2025.pdf"
             file_metadata = {
                 "name": file_name,
                 "parents": [folder_id]
