@@ -1,136 +1,188 @@
-# Training Backup
+> [!Warning]
+> `.gitignore`
+> 
+> It's highly recommended to add `TrainingBackupCredentials/` to the `.gitignore` file if there is any intention of commiting this repository to a shared/public space. Never commit live tokens or secrets. For this setup, credentials files will be managed locally within this directory.
 
-## Overview
 
-This script automates converting a .docx file to .pdf, uploading both the resulting PDF and the original .docx to OneDrive, and distributing the PDF to multiple Google Drives. It also handles local file clean-up, all in a single PowerShell command.
-____
-# Usage
+## Setup Instructions
 
-1. Setup One Drive and Google Drive (see Requirements).
-2. Clone or download this repository to the local machine.
-3. Copy the `TrainingBackupCredentials` folder into the repository.
-4. Create a conda environment with the necessary dependencies (see Requirements).
-5. Modify the paths in the `TrainingBackup.bat` file to call the right `activate.bat` and `miniconda3` (or Anaconda) on your machine.
-6. Modify the paths of the python call in the `TrainingBackup.bat` to the `TrainingBackup.py` in cloned/downloaded repository (supports multiple machines).
-7. Create a `configuration.json` with paths to the training and credentials folders.
-8. Modify in `TrainingBackup.py`:
-	- `docx_path` - modify to accommodate your naming.
-	- `pdf_path` - modify to accommodate your naming.
-	- `Convert .docx to .pdf` - modify to accommodate your naming.
-	- `One Drive Upload` - modify to accommodate your needs.
-		- Currently uploads the whole .docx file and the last page of the .pdf to the root folder in OneDrive.
-	- `Google Drive Upload` - modify to accommodate your needs.
-		- Currently uploads the .pdf to specified folders saved in the `folders` variable.
-			- If the file already exists, it deletes it.
-				- This prevents piling of duplicates in the drive.
-9. Copy `TrainingBackupManualUpdate.ps1`'s contents into the `Microsoft.PowerShell_profile.ps1` and modify the `$backupDirectory` variable.
-10. In PowerShell, type `Training-Backup` (PowerShell is case insensitive!).
-___
-# Requirements
+1.  **Clone Repository**:
+    ```bash
+    git clone <your_repository_url>
+    cd Training_Backup
+    ```
 
-## One Drive
+2.  **Create Conda Environment**:
+    *   Ensure Anaconda or Miniconda is installed.
+    *   From the repository root, create and activate the environment:
+        ```bash
+        conda env create -f TrainingBackup.yml
+        conda activate TrainingBackup
+        ```
 
-- [Microsoft Azure](https://azure.microsoft.com/en-us)
-	- [Azure App Signup step by step](https://github.com/pranabdas/Access-OneDrive-via-Microsoft-Graph-Python/blob/main/Azure_app_signup_step_by_step.md)
-	- Client ID
-	- Client Secret -> Created additionally in "Certificates & Secrets" section.
-	- Both must be copied into a `onedrive_credentials.json`:
-```
-{
-    "client_id": "your_client_id",
-    "client_secret": "your_secret_value"
-}
-```
+3.  **Configure Cloud Service Credentials**:
+    *   Create the `TrainingBackupCredentials` directory in the repository root if it doesn't exist.
+    *   **OneDrive**:
+        *   Follow the [Azure App Signup step-by-step guide](https://github.com/pranabdas/Access-OneDrive-via-Microsoft-Graph-Python/blob/main/Azure_app_signup_step_by_step.md) to register an application in Azure.
+        *   Ensure `Files.ReadWrite.All` (or a more specific `Files.ReadWrite`) and `offline_access` permissions are granted under Microsoft Graph API.
+        *   Set the Redirect URI in Azure to `http://localhost:8080/` (type: Web).
+        *   Create a client secret.
+        *   Create a file named `TrainingBackupCredentials/onedrive_credentials.json` with the following content:
+            ```json
+            {
+                "client_id": "YOUR_AZURE_APP_CLIENT_ID",
+                "client_secret": "YOUR_AZURE_APP_CLIENT_SECRET_VALUE"
+            }
+            ```
+    *   **Google Drive**:
+        *   Go to the [Google Cloud Console](https://cloud.google.com/).
+        *   Create a new project or select an existing one.
+        *   Enable the `Google Drive API`.
+        *   Go to `OAuth consent screen`. Configure it for `External` users (unless you have a Workspace account and want internal). Add your email as a `Test user` during development.
+        *   Go to `Credentials`, click `Create Credentials`, and choose `OAuth client ID`.
+        *   Select `Desktop app` as the application type.
+        *   Download the JSON credentials file and save it as `TrainingBackupCredentials/google_credentials.json`.
 
-## Google Drive
+4.  **Configure Local Paths (`configuration.json`)**:
+    *   In the root of the repository, create or edit `configuration.json`.
+    *   Add an entry for each Windows machine (hostname) you'll run this on. The `hostname` must match the output of `socket.gethostname()` in Python (usually your computer's network name).
+        ```json
+        {
+            "Laptop-Win11": {
+                "training_folder": "C:\\Users\\YourUser\\Path\\To\\TrainingFiles",
+                "credentials_folder": "C:\\Users\\YourUser\\Path\\To\\Training_Backup\\TrainingBackupCredentials"
+            },
+            "PC-Win11": {
+                "training_folder": "E:\\SomeOtherPath\\Training\\2025",
+                "credentials_folder": "E:\\Path\\To\\Training_Backup\\TrainingBackupCredentials"
+            },
+            "YOUR_HOSTNAME_HERE": {
+                "training_folder": "Path\\to\\your\\local\\working\\folder\\for\\ThePRogram2025.docx",
+                "credentials_folder": "Path\\to\\your\\Training_Backup\\TrainingBackupCredentials"
+            }
+        }
+        ```
+        *   Replace `"YOUR_HOSTNAME_HERE"` with your actual machine's hostname.
+        *   Ensure `credentials_folder` points to the `TrainingBackupCredentials` directory within your cloned repository.
+        *   `training_folder` is where `ThePRogram2025.docx` will be downloaded to and worked on.
 
-- [Google Cloud](https://cloud.google.com/gcp?utm_source=google&utm_medium=cpc&utm_campaign=emea-emea-all-en-bkws-all-all-trial-e-gcp-1707574&utm_content=text-ad-none-any-DEV_c-CRE_683761846512-ADGP_Hybrid+%7C+BKWS+-+EXA+%7C+Txt+-+GCP+-+General+-+v2-KWID_43700078882258013-kwd-6458750523-userloc_1007612&utm_term=KW_google%20cloud-NET_g-PLAC_&&gad_source=1&gclid=CjwKCAiAivGuBhBEEiwAWiFmYSEVAU4nVtvqTjYCKbWC08C1ap_UukXjFhKNnvw9t3uknDf6DtumLBoCJTwQAvD_BwE&gclsrc=aw.ds)
-	- Console -> APIs & Services -> OAuth consent screen -> Create a Project -> User Type: External -> Add yourself as Test User -> Credentials -> Create Credentials: OAuth client ID -> Desktop app -> Save the `json` file to `google_credentials.json`
- 
-## Training Backup Credentials Folder
+5.  **Configure Batch Script (`TrainingBackup.bat`)**:
+    *   Open `TrainingBackup.bat` for editing.
+    *   **Python Script Path**:
+        *   If your computer's name (`%COMPUTERNAME%`) is `PC-WIN11`, ensure the path `E:\Development\GitHub\Training_Backup\TrainingBackup.py` is correct.
+        *   For other computer names, ensure `C:\Users\Ivan\Development\GitHub\Training_Backup\TrainingBackup.py` points to `TrainingBackup.py` in your cloned repository. Adjust this line or add more `else if` conditions if needed:
+            ```batch
+            if "%COMPUTERNAME%" == "PC-WIN11" (
+                set "python_script=E:\Development\GitHub\Training_Backup\TrainingBackup.py"
+            ) else (
+                set "python_script=C:\Path\To\Your\Clone\Training_Backup\TrainingBackup.py"
+            )
+            ```
+    *   **Conda Activation Path**:
+        *   Verify the path to your Miniconda/Anaconda installation and `activate.bat`. The script currently uses:
+            ```batch
+            call "C:\Users\Ivan\miniconda3\Scripts\activate.bat" "C:\Users\Ivan\miniconda3"
+            call conda activate TrainingBackup
+            ```
+            Adjust `C:\Users\Ivan\miniconda3` if your installation is elsewhere.
 
-- Create a `TrainingBackupCredentials` folder.
-	- It should contain:
-		- `onedrive_credentials.json`
-		- `google_credentials.json`
+6.  **Configure PowerShell Profile (Optional, for `Training-Backup` command)**:
+    *   Open your PowerShell profile script. You can find its path by typing `$PROFILE` in PowerShell. If it doesn't exist, create it.
+    *   Copy the content of `Training-Backup.ps1` from this repository into your profile script.
+    *   Modify the `Set-Location` line within the `Training-Backup` function to point to the root directory of **this cloned repository** (where `TrainingBackup.bat` is located):
+        ```powershell
+        # Example:
+        # $MachineSpecificPaths.TrainingBackupDirectory might be defined elsewhere in a more complex profile.
+        # For a simple setup, directly set the path:
+        # Set-Location -Path "C:\Path\To\Your\Clone\Training_Backup"
+        # Or, if $MachineSpecificPaths is used:
+        function Training-Backup {
+            $currentDirectory = Get-Location
+            # Ensure this path points to the directory containing TrainingBackup.bat
+            Set-Location -Path "C:\Path\To\Your\Cloned\Training_Backup_Repository" # <--- MODIFY THIS
+            
+            try {
+                & ".\TrainingBackup.bat"
+                Write-Host -ForegroundColor Green "`n=> Training Backup Completed!"
+            }
+            catch {
+                Write-Host -ForegroundColor Red "`n=> Error during Training Backup!"
+                Write-Host -ForegroundColor Red $_.Exception.Message
+            }
+            finally {
+                Set-Location -Path $currentDirectory
+            }
+        }
+        ```
+    *   Save your PowerShell profile and restart PowerShell or reload the profile (`. $PROFILE`).
 
-## Anaconda/Conda Environment with Dependencies
+7.  **Review Python Script Constants (Optional Customization)**:
+    *   The `TrainingBackup.py` script defines several constants at the top that control filenames and cloud folder names:
+        ```python
+        ONEDRIVE_TARGET_FOLDER = "Training"
+        FILE_TO_DOWNLOAD_AND_EDIT = "ThePRogram2025.docx"
+        PDF_OUTPUT_FILENAME = "ThePRogram2025.pdf"
+        ONEDRIVE_TRAINING_PDF_FILENAME = "Training.pdf" # Last page of PDF_OUTPUT_FILENAME
+        GOOGLE_DRIVE_UPLOAD_FOLDER = "PRogram"
+        GOOGLE_DRIVE_UPLOAD_FILENAME = "ThePRogram2025.pdf"
+        ```
+    *   If you need to change these default names/folders, modify them directly in `TrainingBackup.py`.
 
-- [Anaconda](https://docs.anaconda.com/free/anaconda/install/index.html) or [Miniconda](https://docs.anaconda.com/free/miniconda/index.html)
-- Create an environment with:
-	- `conda create --name TrainingBackup`
-- Dependencies:
-	- `pip install requests docx2pdf pypdf google-auth google-auth-oauthlib google-api-python-client`
-___
-# Functions
+## Running the Script
 
-1. **`clean_local_folder(file_path)`**:
-	- **Purpose**: Deletes a file from the local folder if it exists.
-	- Arguments:
-		- `file_path (str)`: Path of the file to be deleted.
-2. **`authenticate_onedrive()`**:
-	- **Purpose**: Authenticates with OneDrive using OAuth2. If tokens are expired or missing, it initiates the authentication process.
-	- **Returns**:
-		- str: Access token for OneDrive API.
-1. **`exchange_code_for_tokens(code)`**:
-	- **Purpose**: Exchanges the authorization code for access and refresh tokens.
-	- Arguments:
-		- code (str): Authorization code received from the OAuth2 flow.	
-	- **Returns**:
-		- tuple: Access token, expiry time, and refresh token.
-1. **`refresh_access_token(refresh_token)`**:
-	- **Purpose**: Refreshes the access token using the refresh token.
-	- **Arguments**:
-		- `refresh_token (str)`: Refresh token for obtaining a new access token.
-	- **Returns**:
-		- tuple: New access token, expiry time, and refresh token.
-1. **`upload_to_onedrive(access_token)`**:
-	- **Purpose**: Uploads the PDF and DOCX files to OneDrive.
-	- **Arguments**:
-		- 	`access_token (str)`: Access token for OneDrive API.
-1. **`authenticate_google_drive()`**:
-	- **Purpose**: Authenticates with Google Drive using OAuth2.
-	- **Returns**: 
-		- google.oauth2.credentials.Credentials: Google API credentials.
-1. **`upload_to_google_drive(credentials)`**:
-	- **Purpose**: Uploads a PDF file to specified folders in the Google Drive. If there already is a file with the same name, it is deleted before the upload.
-		- this deletion is necessary because two files with the same name can be uploaded to Google Drive, which results in unnecessary clutter.
-	- **Parameters**:
-		- credentials: Google API credentials.
-___
-# Error Handling
+1.  Open a new PowerShell terminal (ensure your profile changes are loaded if you modified it).
+2.  Type the command:
+    ```powershell
+    Training-Backup
+    ```
+3.  **First Run**: You will be prompted to authenticate with OneDrive and Google Drive via your web browser. Follow the on-screen instructions. Access tokens will be stored in the `TrainingBackupCredentials` folder for future runs.
+4.  **Manual Editing**: The script will open `ThePRogram2025.docx`. Edit the document, save it, and **close Microsoft Word**.
+5.  Press Enter in the console window when prompted to continue the process.
+6.  The script will then proceed with PDF conversion and cloud uploads.
 
-- **Authentication Errors**:
-	- Prompts reauthentication if credentials are invalid or expired.
+Alternatively, you can run the batch script directly if you don't want to use the PowerShell wrapper:
+1.  Open Command Prompt or PowerShell.
+2.  Navigate to the repository root.
+3.  Activate the conda environment: `conda activate TrainingBackup`
+4.  Run the batch file: `.\TrainingBackup.bat`
 
-- **Upload Errors**:
-	- Retries upload on failure and notifies the user if unsuccessful.
+## Python Script (`TrainingBackup.py`) Details
 
-- **File Path Errors**:
-	- Informs the user of incorrect file paths and provides guidance on verification.
-___
-# Security Considerations:
+The main Python script orchestrates the entire backup process. Key components include:
 
-- **Credential Management**:
-	- Credentials are stored securely in JSON files and access is restricted.
+*   **Constants**: Defines fixed names for files and cloud folders (see "Setup Instructions" Step 7).
+*   **Configuration Loading**: Reads `configuration.json` to determine `training_folder` and `credentials_folder` based on the machine's hostname.
+*   **Authentication Functions**:
+    *   `authenticate_onedrive()`, `exchange_code_for_tokens()`, `refresh_access_token()`: Manage OneDrive OAuth 2.0 flow.
+    *   `authenticate_google_drive()`: Manages Google Drive OAuth 2.0 flow.
+*   **OneDrive File Operations**:
+    *   `download_file_from_onedrive()`: Downloads `FILE_TO_DOWNLOAD_AND_EDIT` from `ONEDRIVE_TARGET_FOLDER`.
+    *   `delete_file_from_onedrive()`: Deletes the specified file from OneDrive.
+    *   `upload_to_onedrive()`: Uploads `FILE_TO_DOWNLOAD_AND_EDIT` (the .docx) and `ONEDRIVE_TRAINING_PDF_FILENAME` (single-page PDF) to `ONEDRIVE_TARGET_FOLDER`.
+*   **Google Drive File Operations**:
+    *   `upload_to_google_drive()`: Uploads `PDF_OUTPUT_FILENAME` to `GOOGLE_DRIVE_UPLOAD_FOLDER`, replacing any existing file.
+*   **Local Operations**:
+    *   Uses `docx2pdf.convert()` for DOCX to PDF conversion.
+    *   Uses `pypdf` to extract the last page for `ONEDRIVE_TRAINING_PDF_FILENAME`.
+    *   `os.startfile()`: Opens the DOCX file for editing.
+    *   `clean_local_folder()`: Deletes specified local files.
 
-- **Token Handling**:
-	- Secure handling of tokens with proper rotation and expiration strategies.
+## Error Handling
 
-- **HTTPS Usage**:
-	- All communications are encrypted via HTTPS
+*   **Authentication Errors**: If tokens are invalid/expired, the script attempts to refresh them. If unsuccessful or on the first run, it initiates a new browser-based authentication flow.
+*   **File/Path Errors**: The script checks for the existence of critical files and prints error messages if they are not found. `configuration.json` errors will halt the script.
+*   **API Errors**: Catches exceptions during cloud API calls and prints error information.
 
-- **Input Sanitization**:
-	- Validates and sanitizes user inputs to prevent security risks.
+## Security Considerations
 
-- **Error Logging**:
-	- Logs errors securely for regular reviews and potential issue identification.
-___
-# Helpful Sources
+*   **Credential Management**:
+    *   API client secrets (`onedrive_credentials.json`, `google_credentials.json`) are stored locally. **Ensure the `TrainingBackupCredentials` folder and its contents are appropriately secured and not committed to public repositories if they contain live secrets.**
+    *   OAuth tokens (`*token.json`) are generated and stored locally. These should also be protected.
+*   **Token Handling**: The script uses standard OAuth 2.0 libraries for token management, including refresh tokens to minimize re-authentication.
+*   **HTTPS Usage**: All API communications with OneDrive and Google Drive are over HTTPS.
 
-- These were studied, used and modified to accomplish the desired effect:
-#### Google Drive Backup:
-- [Automated Google Drive Backups in Python](https://www.youtube.com/watch?v=fkWM7A-MxR0)
-#### One Drive Backup:
-- [Access-OneDrive-via-Microsoft-Graph-Python](https://github.com/pranabdas/Access-OneDrive-via-Microsoft-Graph-Python)
-___
+## Helpful Sources
+
+These resources were instrumental in developing this script:
+*   **Google Drive Backup**: [Automated Google Drive Backups in Python (YouTube)](https://www.youtube.com/watch?v=fkWM7A-MxR0)
+*   **OneDrive Backup**: [Access-OneDrive-via-Microsoft-Graph-Python (GitHub)](https://github.com/pranabdas/Access-OneDrive-via-Microsoft-Graph-Python)
