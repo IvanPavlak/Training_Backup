@@ -180,7 +180,7 @@ def refresh_access_token(refresh_token):
             return None, None, None
         return access_token, expires_at, new_refresh_token
     except requests.exceptions.RequestException as e:
-        print(RED + f"=> Error refreshing One Drive token: {e}" + RESET)
+        print(RED + f"=> Error refreshing OneDrive token: {e}" + RESET)
         if hasattr(e, 'response') and e.response is not None:
             print(RED + f"Response content: {e.response.text}" + RESET)
         return None, None, None
