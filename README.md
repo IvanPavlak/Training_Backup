@@ -2,8 +2,10 @@
 > `.gitignore`
 > 
 > It's highly recommended to add `TrainingBackupCredentials/` to the `.gitignore` file if there is any intention of commiting this repository to a shared/public space. Never commit live tokens or secrets. For this setup, credentials files will be managed locally within this directory.
-
-
+___
+# Preview
+![Preview](preview.png)
+___
 ## Setup Instructions
 
 1.  **Clone Repository**:
