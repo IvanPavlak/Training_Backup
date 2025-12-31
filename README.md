@@ -55,18 +55,18 @@ ___
                 "credentials_folder": "C:\\Users\\YourUser\\Path\\To\\Training_Backup\\TrainingBackupCredentials"
             },
             "PC-Win11": {
-                "training_folder": "E:\\SomeOtherPath\\Training\\2025",
+                "training_folder": "E:\\SomeOtherPath\\Training\\2026",
                 "credentials_folder": "E:\\Path\\To\\Training_Backup\\TrainingBackupCredentials"
             },
             "YOUR_HOSTNAME_HERE": {
-                "training_folder": "Path\\to\\your\\local\\working\\folder\\for\\ThePRogram2025.docx",
+                "training_folder": "Path\\to\\your\\local\\working\\folder\\for\\ThePRogram2026.docx",
                 "credentials_folder": "Path\\to\\your\\Training_Backup\\TrainingBackupCredentials"
             }
         }
         ```
         *   Replace `"YOUR_HOSTNAME_HERE"` with your actual machine's hostname.
         *   Ensure `credentials_folder` points to the `TrainingBackupCredentials` directory within your cloned repository.
-        *   `training_folder` is where `ThePRogram2025.docx` will be downloaded to and worked on.
+        *   `training_folder` is where `ThePRogram2026.docx` will be downloaded to and worked on.
 
 5.  **Configure Batch Script (`TrainingBackup.bat`)**:
     *   Open `TrainingBackup.bat` for editing.
@@ -122,11 +122,11 @@ ___
     *   The `TrainingBackup.py` script defines several constants at the top that control filenames and cloud folder names:
         ```python
         ONEDRIVE_TARGET_FOLDER = "Training"
-        FILE_TO_DOWNLOAD_AND_EDIT = "ThePRogram2025.docx"
-        PDF_OUTPUT_FILENAME = "ThePRogram2025.pdf"
+        FILE_TO_DOWNLOAD_AND_EDIT = "ThePRogram2026.docx"
+        PDF_OUTPUT_FILENAME = "ThePRogram2026.pdf"
         ONEDRIVE_TRAINING_PDF_FILENAME = "Training.pdf" # Last page of PDF_OUTPUT_FILENAME
         GOOGLE_DRIVE_UPLOAD_FOLDER = "PRogram"
-        GOOGLE_DRIVE_UPLOAD_FILENAME = "ThePRogram2025.pdf"
+        GOOGLE_DRIVE_UPLOAD_FILENAME = "ThePRogram2026.pdf"
         ```
     *   If you need to change these default names/folders, modify them directly in `TrainingBackup.py`.
 
@@ -138,7 +138,7 @@ ___
     Training-Backup
     ```
 3.  **First Run**: You will be prompted to authenticate with OneDrive and Google Drive via your web browser. Follow the on-screen instructions. Access tokens will be stored in the `TrainingBackupCredentials` folder for future runs.
-4.  **Manual Editing**: The script will open `ThePRogram2025.docx`. Edit the document, save it, and **close Microsoft Word**.
+4.  **Manual Editing**: The script will open `ThePRogram2026.docx`. Edit the document, save it, and **close Microsoft Word**.
 5.  Press Enter in the console window when prompted to continue the process.
 6.  The script will then proceed with PDF conversion and cloud uploads.
 

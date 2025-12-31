@@ -49,11 +49,11 @@ else:
 # --- Global Variable Definitions ---
 # File and Folder Names
 ONEDRIVE_TARGET_FOLDER = "Training"
-FILE_TO_DOWNLOAD_AND_EDIT = "ThePRogram2025.docx"
-PDF_OUTPUT_FILENAME = "ThePRogram2025.pdf"
+FILE_TO_DOWNLOAD_AND_EDIT = "ThePRogram2026.docx"
+PDF_OUTPUT_FILENAME = "ThePRogram2026.pdf"
 ONEDRIVE_TRAINING_PDF_FILENAME = "Training.pdf" # Last page of PDF_OUTPUT_FILENAME
 GOOGLE_DRIVE_UPLOAD_FOLDER = "PRogram"
-GOOGLE_DRIVE_UPLOAD_FILENAME = "ThePRogram2025.pdf"
+GOOGLE_DRIVE_UPLOAD_FILENAME = "ThePRogram2026.pdf"
 
 # Local Paths
 docx_path = os.path.join(training_folder, FILE_TO_DOWNLOAD_AND_EDIT)
@@ -375,11 +375,11 @@ def upload_to_onedrive(access_token):
     Uploads specified files to the 'Training' folder in OneDrive.
 
     Specifically, it attempts to upload:
-    1. "ThePRogram2025.docx" (from `docx_path`).
+    1. "ThePRogram2026.docx" (from `docx_path`).
     2. "Training.pdf" (which is created by extracting the last page of
-       "ThePRogram2025.pdf" located at `pdf_path`).
+       "ThePRogram2026.pdf" located at `pdf_path`).
 
-    If "ThePRogram2025.pdf" doesn't exist or is empty, it will skip creating
+    If "ThePRogram2026.pdf" doesn't exist or is empty, it will skip creating
     "Training.pdf" and might only upload the .docx file if available.
     It handles file existence checks before attempting uploads.
 
@@ -409,7 +409,7 @@ def upload_to_onedrive(access_token):
     else:
         print(RED + f'=> "{PDF_OUTPUT_FILENAME}" not found. Cannot create "{ONEDRIVE_TRAINING_PDF_FILENAME}" for OneDrive upload.' + RESET)
 
-    # Prepare "ThePRogram2025.docx"
+    # Prepare "ThePRogram2026.docx"
     if os.path.exists(docx_path):
         files_to_upload_map[FILE_TO_DOWNLOAD_AND_EDIT] = docx_path
     else:
@@ -510,7 +510,7 @@ def authenticate_google_drive():
 
 def upload_to_google_drive(google_creds):
     """
-    Uploads the "ThePRogram2025.pdf" (from `pdf_path`) to a specified folder
+    Uploads the "ThePRogram2026.pdf" (from `pdf_path`) to a specified folder
     (GOOGLE_DRIVE_UPLOAD_FOLDER) in Google Drive.
 
     It will:
